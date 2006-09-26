@@ -67,8 +67,8 @@ namespace Splicer.Timeline.Tests
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
-                Assert.AreEqual(12, clip.Duration);
+                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                Assert.AreEqual(7.999, clip.Duration);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Splicer.Timeline.Tests
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
                 Assert.AreSame(track, clip.Container);
                 Assert.AreSame(group, clip.Group);
                 Assert.AreEqual(1, track.Clips.Count);
@@ -95,7 +95,7 @@ namespace Splicer.Timeline.Tests
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
 
                 Assert.AreEqual(ResizeFlags.Stretch, clip.StretchMode);
                 clip.StretchMode = ResizeFlags.PreserveAspectRatio;
@@ -111,14 +111,14 @@ namespace Splicer.Timeline.Tests
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
                 IClip clip =
-                    track.AddClip("clock animation", "clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0,
+                    track.AddClip("clock animation", "transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0,
                                   -1);
                 Assert.AreEqual(1, track.Clips.Count);
                 Assert.AreSame(track.Clips[0], clip);
                 Assert.AreEqual("clock animation", clip.Name);
-                Assert.AreEqual(12, clip.Duration);
+                Assert.AreEqual(7.999, clip.Duration);
                 Assert.AreEqual(0, clip.Offset);
-                Assert.AreEqual("clock.avi", clip.File.FileName);
+                Assert.AreEqual("transitions.wmv", clip.File.FileName);
                 Assert.AreEqual(0, clip.Effects.Count);
             }
         }
@@ -202,7 +202,7 @@ namespace Splicer.Timeline.Tests
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack();
-                IClip clip = track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
 
                 clip.BeforeEffectAdded += new EventHandler(delegate
                     {
@@ -231,10 +231,10 @@ namespace Splicer.Timeline.Tests
                                  @"<timeline framerate=""30.0000000"">
 	<group type=""video"" bitdepth=""24"" width=""64"" height=""64"" framerate=""30.0000000"" previewmode=""0"">
 		<track>
-			<clip start=""0"" stop=""12"" src=""clock.avi"" mstart=""0"">
-				<effect start=""0"" stop=""12"" clsid=""{7312498D-E87A-11D1-81E0-0000F87557DB}"" username=""blur"">
+			<clip start=""0"" stop=""7.9990000"" src=""transitions.wmv"" mstart=""0"">
+				<effect start=""0"" stop=""7.9990000"" clsid=""{7312498D-E87A-11D1-81E0-0000F87557DB}"" username=""blur"">
 					<param name=""PixelRadius"" value=""2"">
-						<linear time=""12"" value=""20"" />
+						<linear time=""7.9990000"" value=""20"" />
 					</param>
 				</effect>
 			</clip>

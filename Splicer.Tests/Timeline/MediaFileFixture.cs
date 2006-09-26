@@ -22,17 +22,17 @@ namespace Splicer.Timeline.Tests
         [Test]
         public void Construct()
         {
-            MediaFile file = new MediaFile("clock.avi");
-            Assert.AreEqual("clock.avi", file.FileName);
-            Assert.AreEqual(12, file.Length);
-            Assert.AreEqual(TimelineUtils.ToUnits(12), file.LengthInUnits);
+            MediaFile file = new MediaFile("transitions.wmv");
+            Assert.AreEqual("transitions.wmv", file.FileName);
+            Assert.AreEqual(7.999, file.Length);
+            Assert.AreEqual(TimelineUtils.ToUnits(7.999), file.LengthInUnits);
             Assert.AreEqual(-1, file.LengthInFrames); // not assigned till later
         }
 
         [Test]
         public void SetLength()
         {
-            MediaFile file = new MediaFile("clock.avi");
+            MediaFile file = new MediaFile("transitions.wmv");
             file.LengthInUnits = TimelineUtils.ToUnits(2);
             Assert.AreEqual(2, file.Length);
         }
@@ -41,14 +41,14 @@ namespace Splicer.Timeline.Tests
         [ExpectedException(typeof (SplicerException), "Invalid length specified")]
         public void SetLengthTooLong()
         {
-            MediaFile file = new MediaFile("clock.avi");
+            MediaFile file = new MediaFile("transitions.wmv");
             file.LengthInUnits = TimelineUtils.ToUnits(20);
         }
 
         [Test]
         public void SetLengthToZero()
         {
-            MediaFile file = new MediaFile("clock.avi");
+            MediaFile file = new MediaFile("transitions.wmv");
             file.LengthInUnits = 0;
         }
 
@@ -56,7 +56,7 @@ namespace Splicer.Timeline.Tests
         [ExpectedException(typeof (SplicerException), "Invalid length specified")]
         public void SetLengthToNegative()
         {
-            MediaFile file = new MediaFile("clock.avi");
+            MediaFile file = new MediaFile("transitions.wmv");
             file.LengthInUnits = -1;
         }
     }

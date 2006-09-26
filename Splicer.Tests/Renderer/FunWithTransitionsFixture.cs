@@ -70,26 +70,41 @@ namespace Splicer.Tests.Renderer
             using (ITimeline timeline = new DefaultTimeline())
             {
                 IGroup group = timeline.AddVideoGroup(32, 160, 100);
-                ITrack low = group.AddTrack();
-                ITrack hi = group.AddTrack();
-                hi.AddClip("image1.jpg", GroupMediaType.Image, InsertPosition.Relative, 0, 0, 6);
-                hi.AddClip("image2.jpg", GroupMediaType.Image, InsertPosition.Relative, 0, 0, 6);
-                hi.AddClip("image3.jpg", GroupMediaType.Image, InsertPosition.Relative, 0, 0, 6);
+                
+                ITrack videoTrack = group.AddTrack();
+                IClip clip1 = videoTrack.AddImage("image1.jpg", 0, 2); // play first image for a little while
+                IClip clip2 = videoTrack.AddImage("image2.jpg", 0, 2); // and the next
+                IClip clip3 = videoTrack.AddImage("image3.jpg", 0, 2); // and finally the last
+                IClip clip4 = videoTrack.AddImage("image4.jpg", 0, 2); // and finally the last
+
+                double halfDuration = 0.5;
 
                 // fade out and back in
-                group.AddTransition(5.5, 0.5, StandardTransitions.CreateFade(), true);
-                group.AddTransition(6.0, 0.5, StandardTransitions.CreateFade(), false);
+                group.AddTransition(clip2.Offset - halfDuration, halfDuration, StandardTransitions.CreateFade(), true);
+                group.AddTransition(clip2.Offset, halfDuration, StandardTransitions.CreateFade(), false);
+
+                // again
+                group.AddTransition(clip3.Offset - halfDuration, halfDuration, StandardTransitions.CreateFade(), true);
+                group.AddTransition(clip3.Offset, halfDuration, StandardTransitions.CreateFade(), false);
 
                 // and again
-                group.AddTransition(11.5, 0.5, StandardTransitions.CreateFade(), true);
-                group.AddTransition(12.0, 0.5, StandardTransitions.CreateFade(), false);
+                group.AddTransition(clip4.Offset - halfDuration, halfDuration, StandardTransitions.CreateFade(), true);
+                group.AddTransition(clip4.Offset, halfDuration, StandardTransitions.CreateFade(), false);
 
+                // add some audio
                 ITrack audioTrack = timeline.AddAudioGroup().AddTrack();
+                
                 IClip audio =
-                    audioTrack.AddClip("testinput.wav", GroupMediaType.Audio, InsertPosition.Relative, 0, 0, hi.Duration);
+                    audioTrack.AddAudio("testinput.wav", 0, videoTrack.Duration);
+
+                // create an audio envelope effect, this will:
+                // fade the audio from 0% to 100% in 1 second.
+                // play at full volume until 1 second before the end of the track
+                // fade back out to 0% volume
                 audioTrack.AddEffect(0, audio.Duration,
                                      StandardEffects.CreateAudioEnvelope(1.0, 1.0, 1.0, audio.Duration));
 
+                // render our slideshow out to a windows media file
                 using (
                     IRenderer renderer =
                         new WindowsMediaRenderer(timeline, outputFile, WindowsMediaProfiles.HighQualityVideo))
@@ -138,31 +153,44 @@ namespace Splicer.Tests.Renderer
         {
             // this demonstrates one way of watermarking a video clip... 
 
-            string outputFile = "Watermark.wmv";
+            string outputFile = "WatermarkVideoClip.wmv";
 
-            using (ITimeline timeline = new DefaultTimeline())
+            using (ITimeline timeline = new DefaultTimeline(15))
             {
-                timeline.AddAudioGroup().AddTrack().AddClip("testinput.mp3", GroupMediaType.Audio,
-                                                            InsertPosition.Relative, 0, 0, 5);
+                // greate our default audio track
+                timeline.AddAudioGroup().AddTrack();
 
-                IGroup group = timeline.AddVideoGroup(32, 320, 240);
-                ITrack content = group.AddTrack();
-                ITrack watermark = group.AddTrack();
-                content.AddClip("testpattern1.gif", GroupMediaType.Image, InsertPosition.Relative, 0, 0, 5);
+                // add a video group, 32bpp, 320x240 (32bpp required to allow for an alpha channel)
+                IGroup videoGroup = timeline.AddVideoGroup(32, 320, 240);
+                
+                // add our default video track
+                ITrack videoTrack = videoGroup.AddTrack();
+                
+                // add another video track, this will be used to contain our watermark image
+                ITrack watermarkTrack = videoGroup.AddTrack();
 
-                IClip watermarkClip =
-                    watermark.AddClip("testlogo.gif", GroupMediaType.Image, InsertPosition.Relative, 0, 0,
-                                      content.Duration);
-                watermarkClip.AddEffect(0, watermarkClip.Duration, StandardEffects.CreateAlphaSetterRamp(0.5));
-                watermark.AddTransition(0, content.Duration,
+                // add the video in "transitions.wmv" to the first video track, and the audio in "transitions.wmv"
+                // to the first audio track.
+                timeline.AddVideoWithAudio("transitions.wmv");
+
+                // add the watermark image in, and apply it for the duration of the videoContent
+                // this image will be stretched to fit the video clip, and in this case is a transparent gif.
+                IClip watermarkClip = watermarkTrack.AddImage( "testlogo.gif", 0, videoTrack.Duration);
+
+                // add a alpha setter effect to the image, this will adjust the alpha of the image to be 0.5
+                // of it's previous value - so the watermark is 50% transparent.
+                watermarkClip.AddEffect(0, watermarkClip.Duration, StandardEffects.CreateAlphaSetterRamp(0.8));
+
+                // add a transition to the watermark track, this allows the video clip to "shine through" the watermark,
+                // base on the values present in the alpha channel of the watermark track.
+                watermarkTrack.AddTransition(0, videoTrack.Duration,
                                         StandardTransitions.CreateDxtKey(DxtKeyTypes.Alpha, null, null, null, null, null),
                                         false);
-
                 using (
+                    // render it to windows media
                     IRenderer renderer =
                         new WindowsMediaRenderer(timeline, outputFile, WindowsMediaProfiles.HighQualityVideo))
                 {
-                    Console.WriteLine(renderer.ToXml());
                     renderer.Render();
                 }
             }

@@ -64,7 +64,7 @@ namespace Splicer.Renderer.Tests
             {
                 IGroup videoGroup = timeline.AddVideoGroup(24, 100, 100);
                 ITrack rootTrack = videoGroup.AddTrack();
-                rootTrack.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                rootTrack.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
 
                 using (
                     WindowsMediaRenderer renderer =
@@ -138,7 +138,7 @@ namespace Splicer.Renderer.Tests
                 IGroup videoGroup = timeline.AddVideoGroup(0x20, 320, 240);
                 ITrack videoTrack = videoGroup.AddTrack();
                 IClip clockClip =
-                    videoTrack.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                    videoTrack.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
 
                 Assert.IsTrue(clockClip.Duration > 0);
 
@@ -154,7 +154,7 @@ namespace Splicer.Renderer.Tests
                                     @"<timeline framerate=""30.0000000"">
     <group type=""video"" bitdepth=""32"" framerate=""30.0000000"" previewmode=""0"">
         <track>
-            <clip start=""0"" stop=""2"" src=""clock.avi"" mstart=""0"" />
+            <clip start=""0"" stop=""2"" src=""transitions.wmv"" mstart=""0"" />
         </track>
     </group>
     <group type=""audio"" framerate=""30.0000000"" previewmode=""0"">

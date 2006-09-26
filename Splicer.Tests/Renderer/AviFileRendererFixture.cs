@@ -44,7 +44,7 @@ namespace Splicer.Tests.Renderer
             {
                 IGroup group = timeline.AddVideoGroup(24, 100, 80);
                 ITrack track = group.AddTrack();
-                track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
 
                 using (IRenderer renderer = new AviFileRenderer(timeline, null))
                 {
@@ -62,7 +62,7 @@ namespace Splicer.Tests.Renderer
             {
                 IGroup group = timeline.AddVideoGroup(24, 100, 80);
                 ITrack track = group.AddTrack();
-                track.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
 
                 using (IRenderer renderer = new AviFileRenderer(timeline, outputFile))
                 {
@@ -82,7 +82,7 @@ namespace Splicer.Tests.Renderer
             {
                 IGroup videoGroup = timeline.AddVideoGroup(24, 100, 80);
                 ITrack videoTrack = videoGroup.AddTrack();
-                videoTrack.AddClip("clock.avi", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                videoTrack.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
 
                 IGroup audioGroup = timeline.AddAudioGroup();
                 ITrack audioTrack = audioGroup.AddTrack();
