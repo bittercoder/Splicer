@@ -1,0 +1,134 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{642F2739-7D12-4532-9153-15EC7A0CB3B4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Splicer.Tests</RootNamespace>
+    <AssemblyName>Splicer.Tests</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DirectShowLib-2005, Version=1.5.0.25128, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\DirectShowLib-2005.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.2.6.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libs\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AbstractFixture.cs" />
+    <Compile Include="Renderer\AviFileRendererFixture.cs" />
+    <Compile Include="Renderer\ConsoleProgressCallbackFixture.cs" />
+    <Compile Include="Renderer\FunWithTransitionsFixture.cs" />
+    <Compile Include="Renderer\NullRendererFixture.cs" />
+    <Compile Include="Renderer\WavFileRendererFixture.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Renderer\WindowsMediaRendererFixture.cs" />
+    <Compile Include="Timeline\AfterAddedToContainerEventArgsFixture.cs" />
+    <Compile Include="Timeline\AudioVideoClipPairFixture.cs" />
+    <Compile Include="Timeline\ClipFixture.cs" />
+    <Compile Include="Timeline\Composition.cs" />
+    <Compile Include="Timeline\DefaultTimelineFixture.cs" />
+    <Compile Include="Timeline\EffectDefinitionFixture.cs" />
+    <Compile Include="Timeline\EffectFixture.cs" />
+    <Compile Include="Timeline\GroupFixture.cs" />
+    <Compile Include="Timeline\IntervalFixture.cs" />
+    <Compile Include="Timeline\MediaFileFixture.cs" />
+    <Compile Include="Timeline\MockClip.cs" />
+    <Compile Include="Timeline\MockMediaFileAssistant.cs" />
+    <Compile Include="Timeline\ParameterFixture.cs" />
+    <Compile Include="Timeline\StandardEffectsFixture.cs" />
+    <Compile Include="Timeline\StandardTransitionsFixture.cs" />
+    <Compile Include="Timeline\TimelineUtilsFixture.cs" />
+    <Compile Include="Timeline\TrackFixture.cs" />
+    <Compile Include="Timeline\TransitionDefinitionFixture.cs" />
+    <Compile Include="Timeline\TransitionFixture.cs" />
+    <Compile Include="Timeline\VirtualClipCollectionFixture.cs" />
+    <Compile Include="Timeline\VirtualClipFixture.cs" />
+    <Compile Include="Utils\MediaTypeUtilsFixture.cs" />
+    <Compile Include="WindowsMedia\BundledProflesFixture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Splicer\Splicer.csproj">
+      <Project>{77C46D9D-1BC1-4CAF-87CF-9242721066EF}</Project>
+      <Name>Splicer</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="image1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="image2.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="image3.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="image4.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testinput.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testinput.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testpattern1.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="1sec.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="1sec.wmv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="clock.avi">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testlogo.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
