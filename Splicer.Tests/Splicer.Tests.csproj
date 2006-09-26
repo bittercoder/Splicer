@@ -34,11 +34,11 @@
   <ItemGroup>
     <Reference Include="DirectShowLib-2005, Version=1.5.0.25128, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\DirectShowLib-2005.dll</HintPath>
+      <HintPath>..\Libs\DirectShowLib-2005.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.2.6.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\nunit.framework.dll</HintPath>
+      <HintPath>..\Libs\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

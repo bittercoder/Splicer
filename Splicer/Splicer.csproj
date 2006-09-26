@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="DirectShowLib-2005, Version=1.5.0.25128, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\DirectShowLib-2005.dll</HintPath>
+      <HintPath>..\Libs\DirectShowLib-2005.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -52,7 +52,6 @@
     <Compile Include="Renderer\RendererAsyncResult.cs" />
     <Compile Include="SplicerException.cs" />
     <Compile Include="Timeline\AudioVideoClipPair.cs" />
-    <Compile Include="Timeline\IVirtualClipCollection.cs" />
     <Compile Include="Timeline\VirtualClip.cs" />
     <Compile Include="Utils\Audio\AudioCompressor.cs" />
     <Compile Include="Utils\Audio\AudioCompressorFactory.cs" />

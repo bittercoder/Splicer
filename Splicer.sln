@@ -9,10 +9,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Splicer.Contrib", "Splicer.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{005F133D-2FED-433F-9B29-1D351795816B}"
 	ProjectSection(SolutionItems) = preProject
+		ASL - Apache Software Foundation License.txt = ASL - Apache Software Foundation License.txt
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{D71D9ECC-A5A2-48E1-B1F3-B40CBB3C25E6}"
+	ProjectSection(SolutionItems) = preProject
+		Libs\DirectShowLib-2005.dll = Libs\DirectShowLib-2005.dll
+		Libs\DirectShowLib-2005.pdb = Libs\DirectShowLib-2005.pdb
+		Libs\nunit.framework.dll = Libs\nunit.framework.dll
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
