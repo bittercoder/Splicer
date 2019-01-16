@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,39 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using Splicer.Properties;
 
 namespace Splicer.Timeline
 {
-    public class VirtualClipCollection : IVirtualClipCollection
+    public sealed class VirtualClipCollection : IVirtualClipCollection
     {
-        private List<VirtualClip> _clips = new List<VirtualClip>();
+        private readonly List<VirtualClip> _clips = new List<VirtualClip>();
+
+        #region IVirtualClipCollection Members
+
+        public IVirtualClip this[int index]
+        {
+            get { return _clips[index]; }
+        }
+
+        public int Count
+        {
+            get { return _clips.Count; }
+        }
+
+        public IEnumerator<IVirtualClip> GetEnumerator()
+        {
+            return new List<IVirtualClip>(_clips.ToArray()).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _clips).GetEnumerator();
+        }
+
+        #endregion
 
         public void AddVirtualClip(IClip clip)
         {
@@ -84,37 +110,9 @@ namespace Splicer.Timeline
             _clips.Sort();
         }
 
-        public IVirtualClip this[int index]
-        {
-            get { return _clips[index]; }
-        }
-
-        public int Count
-        {
-            get { return _clips.Count; }
-        }
-
-        #region IEnumerable<IVirtualClip> Members
-
-        public IEnumerator<IVirtualClip> GetEnumerator()
-        {
-            return new List<IVirtualClip>(_clips.ToArray()).GetEnumerator();
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) _clips).GetEnumerator();
-        }
-
-        #endregion
-
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             foreach (VirtualClip clip in _clips)
             {
@@ -128,51 +126,22 @@ namespace Splicer.Timeline
 
     public class VirtualClip : IVirtualClip, IComparable<IVirtualClip>, IComparable
     {
+        private readonly IClip _sourceClip;
         private double _offset;
-        private double _duration;
-        private double _mediaStart;
-        private IClip _sourceClip;
 
         public VirtualClip(double offset, double duration, double mediaStart, IClip sourceClip)
         {
             _offset = offset;
-            _duration = duration;
-            _mediaStart = mediaStart;
+            Duration = duration;
+            MediaStart = mediaStart;
             _sourceClip = sourceClip;
         }
 
-        #region IVirtualClip Members
+        #region IComparable Members
 
-        public double Offset
+        public int CompareTo(object obj)
         {
-            get { return _offset; }
-            set { _offset = value; }
-        }
-
-        public double Duration
-        {
-            get { return _duration; }
-            set { _duration = value; }
-        }
-
-        public double MediaStart
-        {
-            get { return _mediaStart; }
-            set { _mediaStart = value; }
-        }
-
-        public IClip SourceClip
-        {
-            get { return _sourceClip; }
-        }
-
-        #endregion
-
-        #region IName Members
-
-        public string Name
-        {
-            get { return _sourceClip.Name; }
+            return CompareTo(obj as VirtualClip);
         }
 
         #endregion
@@ -188,19 +157,66 @@ namespace Splicer.Timeline
 
         #endregion
 
-        #region IComparable Members
+        #region IVirtualClip Members
 
-        public int CompareTo(object obj)
+        public double Offset
         {
-            return CompareTo(obj as IVirtualClip);
+            get { return _offset; }
+            set { _offset = value; }
+        }
+
+        public double Duration { get; set; }
+
+        public double MediaStart { get; set; }
+
+        public IClip SourceClip
+        {
+            get { return _sourceClip; }
+        }
+
+        public string Name
+        {
+            get { return _sourceClip.Name; }
         }
 
         #endregion
 
+        public override bool Equals(Object obj)
+        {
+            if (!(obj is IVirtualClip)) return false;
+
+            return (CompareTo(obj) == 0);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int) _offset;
+        }
+
+        public static bool operator ==(VirtualClip r1, VirtualClip r2)
+        {
+            return r1.Equals(r2);
+        }
+
+        public static bool operator !=(VirtualClip r1, VirtualClip r2)
+        {
+            return !(r1 == r2);
+        }
+
+        public static bool operator <(VirtualClip r1, VirtualClip r2)
+        {
+            return (r1.CompareTo(r2) < 0);
+        }
+
+        public static bool operator >(VirtualClip r1, VirtualClip r2)
+        {
+            return (r1.CompareTo(r2) > 0);
+        }
+
         public override string ToString()
         {
             return
-                string.Format("<clip start=\"{0}\" stop=\"{1}\" src=\"{2}\" mstart=\"{3}\" />", Offset,
+                string.Format(CultureInfo.CurrentUICulture, Resources.VirtualClipToStringTemplate, Offset,
                               Offset + Duration, SourceClip.File.FileName, MediaStart);
         }
     }

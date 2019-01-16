@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Reflection;
+using System.Security.Permissions;
 
 [assembly : AssemblyTitle("Splicer.Contrib")]
 [assembly : AssemblyDescription("Contributed extensions for the Splicer library")]
+[assembly : CLSCompliant(true)]
+[assembly : SecurityPermission(SecurityAction.RequestMinimum, UnmanagedCode = true)]

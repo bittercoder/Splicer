@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,44 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class IntervalFixture
     {
-        [Test]
+        [TestMethod]
         public void Construct1()
         {
-            Interval interval = new Interval();
+            var interval = new Interval();
             Assert.AreEqual(IntervalMode.Interpolate, interval.Mode);
             Assert.AreEqual(0, interval.Time);
             Assert.IsNull(interval.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct2()
         {
-            Interval interval = new Interval(IntervalMode.Interpolate, 1, "0.2");
+            var interval = new Interval(IntervalMode.Interpolate, 1, "0.2");
             Assert.AreEqual(IntervalMode.Interpolate, interval.Mode);
             Assert.AreEqual(1, interval.Time);
             Assert.AreEqual("0.2", interval.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct3()
         {
-            Interval interval = new Interval(1, "0.2");
+            var interval = new Interval(1, "0.2");
             Assert.AreEqual(IntervalMode.Interpolate, interval.Mode);
             Assert.AreEqual(1, interval.Time);
             Assert.AreEqual("0.2", interval.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void SetValues()
         {
-            Interval interval = new Interval();
+            var interval = new Interval();
 
             interval.Mode = IntervalMode.Jump;
             Assert.AreEqual(IntervalMode.Jump, interval.Mode);

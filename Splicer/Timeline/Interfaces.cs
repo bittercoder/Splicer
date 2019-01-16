@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using DirectShowLib.DES;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Timeline
 {
@@ -24,12 +25,12 @@ namespace Splicer.Timeline
         IGroup Group { get; }
     }
 
-    public abstract class AfterAddedToContainerEventArgs<TItem, TContainer> : EventArgs
+    public abstract class AddedToContainerEventArgs<TItem, TContainer> : EventArgs
     {
-        private TItem _item;
-        private TContainer _container;
+        private readonly TContainer _container;
+        private readonly TItem _item;
 
-        public AfterAddedToContainerEventArgs(TItem item, TContainer container)
+        protected AddedToContainerEventArgs(TItem item, TContainer container)
         {
             if (item == null) throw new ArgumentNullException("item");
             if (container == null) throw new ArgumentNullException("container");
@@ -48,49 +49,49 @@ namespace Splicer.Timeline
         }
     }
 
-    public class AfterEffectAddedEventArgs : AfterAddedToContainerEventArgs<IEffect, IEffectContainer>
+    public class AddedEffectEventArgs : AddedToContainerEventArgs<IEffect, IEffectContainer>
     {
-        public AfterEffectAddedEventArgs(IEffect item, IEffectContainer container)
+        public AddedEffectEventArgs(IEffect item, IEffectContainer container)
             : base(item, container)
         {
         }
     }
 
-    public class AfterTransitionAddedEventArgs : AfterAddedToContainerEventArgs<ITransition, ITransitionContainer>
+    public class AddedTransitionEventArgs : AddedToContainerEventArgs<ITransition, ITransitionContainer>
     {
-        public AfterTransitionAddedEventArgs(ITransition item, ITransitionContainer container)
+        public AddedTransitionEventArgs(ITransition item, ITransitionContainer container)
             : base(item, container)
         {
         }
     }
 
-    public class AfterTrackAddedEventArgs : AfterAddedToContainerEventArgs<ITrack, ITrackContainer>
+    public class AddedTrackEventArgs : AddedToContainerEventArgs<ITrack, ITrackContainer>
     {
-        public AfterTrackAddedEventArgs(ITrack item, ITrackContainer container)
+        public AddedTrackEventArgs(ITrack item, ITrackContainer container)
             : base(item, container)
         {
         }
     }
 
-    public class AfterClipAddedEventArgs : AfterAddedToContainerEventArgs<IClip, IClipContainer>
+    public class AddedClipEventArgs : AddedToContainerEventArgs<IClip, IClipContainer>
     {
-        public AfterClipAddedEventArgs(IClip item, IClipContainer container)
+        public AddedClipEventArgs(IClip item, IClipContainer container)
             : base(item, container)
         {
         }
     }
 
-    public class AfterGroupAddedEventArgs : AfterAddedToContainerEventArgs<IGroup, IGroupContainer>
+    public class AddedGroupEventArgs : AddedToContainerEventArgs<IGroup, IGroupContainer>
     {
-        public AfterGroupAddedEventArgs(IGroup item, IGroupContainer container)
+        public AddedGroupEventArgs(IGroup item, IGroupContainer container)
             : base(item, container)
         {
         }
     }
 
-    public class AfterCompositionAddedEventArgs : AfterAddedToContainerEventArgs<IComposition, ICompositionContainer>
+    public class AddedCompositionEventArgs : AddedToContainerEventArgs<IComposition, ICompositionContainer>
     {
-        public AfterCompositionAddedEventArgs(IComposition item, ICompositionContainer container)
+        public AddedCompositionEventArgs(IComposition item, ICompositionContainer container)
             : base(item, container)
         {
         }
@@ -130,17 +131,18 @@ namespace Splicer.Timeline
 
     public interface IEffectContainer : IBelongsToGroup
     {
-        event EventHandler<AfterEffectAddedEventArgs> AfterEffectAdded;
-        event EventHandler BeforeEffectAdded;
+        AddOnlyCollection<IEffect> Effects { get; }
+        event EventHandler<AddedEffectEventArgs> AddedEffect;
+        event EventHandler AddingEffect;
         IEffect AddEffect(double offset, double duration, EffectDefinition effectDefinition);
         IEffect AddEffect(string name, int priority, double offset, double duration, EffectDefinition effectDefinition);
-        AddOnlyList<IEffect> Effects { get; }
     }
 
     public interface ITransitionContainer : IBelongsToGroup
     {
-        event EventHandler BeforeTransitionAdded;
-        event EventHandler<AfterTransitionAddedEventArgs> AfterTransitionAdded;
+        AddOnlyCollection<ITransition> Transitions { get; }
+        event EventHandler AddingTransition;
+        event EventHandler<AddedTransitionEventArgs> AddedTransition;
 
         ITransition AddTransition(double offset, double duration, TransitionDefinition transitionDefinition);
 
@@ -149,29 +151,32 @@ namespace Splicer.Timeline
 
         ITransition AddTransition(string name, double offset, double duration, TransitionDefinition transitionDefinition,
                                   bool swapInputs);
-
-        AddOnlyList<ITransition> Transitions { get; }
     }
 
     public interface ITrackContainer : IBelongsToGroup
     {
-        event EventHandler BeforeTrackAdded;
-        event EventHandler<AfterTrackAddedEventArgs> AfterTrackAdded;
+        AddOnlyCollection<ITrack> Tracks { get; }
+        event EventHandler AddingTrack;
+        event EventHandler<AddedTrackEventArgs> AddedTrack;
         ITrack AddTrack(string name, int priority);
         ITrack AddTrack();
-        AddOnlyList<ITrack> Tracks { get; }
     }
 
     public interface IClipContainer : IBelongsToGroup
     {
-        event EventHandler BeforeClipAdded;
-        event EventHandler<AfterClipAddedEventArgs> AfterClipAdded;
+        AddOnlyCollection<IClip> Clips { get; }
+        event EventHandler AddingClip;
+        event EventHandler<AddedClipEventArgs> AddedClip;
 
         IClip AddClip(string fileName, GroupMediaType mediaType, InsertPosition position, double offset,
                       double clipStart, double clipEnd);
 
         IClip AddClip(string name, string fileName, GroupMediaType mediaType, InsertPosition position, double offset,
                       double clipStart, double clipEnd);
+
+        IClip AddClip(string name, string fileName, GroupMediaType mediaType, InsertPosition position,
+                      double offset,
+                      double clipStart, double clipEnd, bool manageLifespan);
 
         IClip AddVideo(string name, string fileName, InsertPosition position, double offset, double clipStart,
                        double clipEnd);
@@ -200,25 +205,32 @@ namespace Splicer.Timeline
         IClip AddAudio(string fileName, double offset);
         IClip AddAudio(string fileName);
 
-        AddOnlyList<IClip> Clips { get; }
+        IClip AddImage(string name, Image image, InsertPosition position, double offset, double clipStart,
+                       double clipEnd);
+
+        IClip AddImage(Image image, InsertPosition position, double offset, double clipStart, double clipEnd);
+        IClip AddImage(Image image, double offset, double clipStart, double clipEnd);
+        IClip AddImage(Image image, double offset, double clipEnd);
+        IClip AddImage(Image image, double offset);
+        IClip AddImage(Image image);
     }
 
     public interface ICompositionContainer : IBelongsToGroup
     {
-        event EventHandler BeforeCompositionAdded;
-        event EventHandler<AfterCompositionAddedEventArgs> AfterCompositionAdded;
+        AddOnlyCollection<IComposition> Compositions { get; }
+        event EventHandler AddingComposition;
+        event EventHandler<AddedCompositionEventArgs> AddedComposition;
         IComposition AddComposition(string name, int priority);
         IComposition AddComposition();
-        AddOnlyList<IComposition> Compositions { get; }
     }
 
     public interface IComposition : IName, IPriority, ICompositionContainer, ITrackContainer, IEffectContainer,
                                     ITransitionContainer,
-                                    IDisposable, IBelongsToGroup
+                                    IBelongsToGroup
     {
-        event EventHandler BeforeClipAdded;
-        event EventHandler<AfterClipAddedEventArgs> AfterClipAdded;
         ICompositionContainer Container { get; }
+        event EventHandler AddingClip;
+        event EventHandler<AddedClipEventArgs> AddedClip;
     }
 
     public interface ITrack : IName, IPriority, IEffectContainer, ITransitionContainer, IClipContainer, IDisposable,
@@ -257,14 +269,14 @@ namespace Splicer.Timeline
     {
         ITimeline Timeline { get; }
         GroupType Type { get; }
-        double FPS { get; }
+        double Fps { get; }
     }
 
     public interface IGroupContainer
     {
-        event EventHandler BeforeGroupAdded;
-        event EventHandler<AfterGroupAddedEventArgs> AfterGroupAdded;
-        AddOnlyList<IGroup> Groups { get; }
+        AddOnlyCollection<IGroup> Groups { get; }
+        event EventHandler AddingGroup;
+        event EventHandler<AddedGroupEventArgs> AddedGroup;
         IGroup AddAudioGroup(string name, double fps);
         IGroup AddVideoGroup(string name, double fps, short bitCount, int width, int height);
         IGroup AddAudioGroup(string name);
@@ -282,21 +294,23 @@ namespace Splicer.Timeline
 
     public interface ITimeline : IGroupContainer, IDisposable
     {
-        event EventHandler BeforeClipAdded;
-        event EventHandler<AfterClipAddedEventArgs> AfterClipAdded;
-        event EventHandler BeforeCompositionAdded;
-        event EventHandler<AfterCompositionAddedEventArgs> AfterCompositionAdded;
-        event EventHandler BeforeTrackAdded;
-        event EventHandler<AfterTrackAddedEventArgs> AfterTrackAdded;
-        event EventHandler BeforeTransitionAdded;
-        event EventHandler<AfterTransitionAddedEventArgs> AfterTransitionAdded;
-        event EventHandler<AfterEffectAddedEventArgs> AfterEffectAdded;
-        event EventHandler BeforeEffectAdded;
-
-        double FPS { get; }
+        double Fps { get; }
         IAMTimeline DesTimeline { get; }
         double Duration { get; }
         long LengthInUnits { get; }
+        IEnumerable<IMediaFileAssistant> Assistants { get; }
+
+        string TemporaryStoragePath { get; set; }
+        event EventHandler AddingClip;
+        event EventHandler<AddedClipEventArgs> AddedClip;
+        event EventHandler AddingComposition;
+        event EventHandler<AddedCompositionEventArgs> AddedComposition;
+        event EventHandler AddingTrack;
+        event EventHandler<AddedTrackEventArgs> AddedTrack;
+        event EventHandler AddingTransition;
+        event EventHandler<AddedTransitionEventArgs> AddedTransition;
+        event EventHandler<AddedEffectEventArgs> AddedEffect;
+        event EventHandler AddingEffect;
 
         IClip AddClip(string fileName, GroupMediaType mediaType, InsertPosition position, double offset,
                       double clipStart, double clipEnd);
@@ -306,6 +320,10 @@ namespace Splicer.Timeline
 
         IClip AddVideo(string name, string fileName, InsertPosition position, double offset, double clipStart,
                        double clipEnd);
+
+        IClip AddClip(string name, string fileName, GroupMediaType mediaType, InsertPosition position,
+                      double offset,
+                      double clipStart, double clipEnd, bool manageLifespan);
 
         IClip AddVideo(string fileName, InsertPosition position, double offset, double clipStart, double clipEnd);
         IClip AddVideo(string fileName, double offset, double clipStart, double clipEnd);
@@ -331,8 +349,6 @@ namespace Splicer.Timeline
         IClip AddAudio(string fileName, double offset);
         IClip AddAudio(string fileName);
 
-        // TODO: add support for shadowing inputs (copy source file)
-
         IAudioVideoClipPair AddVideoWithAudio(string name, string fileName, InsertPosition position, double offset,
                                               double clipStart, double clipEnd);
 
@@ -344,8 +360,26 @@ namespace Splicer.Timeline
         IAudioVideoClipPair AddVideoWithAudio(string fileName, double offset);
         IAudioVideoClipPair AddVideoWithAudio(string fileName);
 
+        IAudioVideoClipPair AddVideoWithAudio(string name, string fileName, InsertPosition position, double offset,
+                                              double clipStart, double clipEnd, bool shadowCopyAudio);
+
+        IAudioVideoClipPair AddVideoWithAudio(string fileName, InsertPosition position, double offset, double clipStart,
+                                              double clipEnd, bool shadowCopyAudio);
+
+        IAudioVideoClipPair AddVideoWithAudio(string fileName, double offset, double clipStart, double clipEnd,
+                                              bool shadowCopyAudio);
+
+        IAudioVideoClipPair AddVideoWithAudio(string fileName, double offset, double clipEnd, bool shadowCopyAudio);
+        IAudioVideoClipPair AddVideoWithAudio(string fileName, double offset, bool shadowCopyAudio);
+        IAudioVideoClipPair AddVideoWithAudio(string fileName, bool shadowCopyAudio);
+
+        /*IClip AddImage(Image image, InsertPosition position, double offset, double clipStart, double clipEnd);
+        IClip AddImage(Image image, double offset, double clipStart, double clipEnd);
+        IClip AddImage(Image image, double offset, double clipEnd);
+        IClip AddImage(Image image, double offset);
+        IClip AddImage(Image image);*/
+
         void InstallAssistant(IMediaFileAssistant assistant);
-        IEnumerable<IMediaFileAssistant> Assitants { get; }
     }
 
     public interface IMediaFileAssistant

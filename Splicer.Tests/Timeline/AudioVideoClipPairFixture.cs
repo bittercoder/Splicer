@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,32 +13,33 @@
 // limitations under the License.
 
 using System;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class AudioVideoClipPairFixture
     {
-        [Test]
+        [TestMethod]
         [ExpectedException(typeof (ArgumentNullException))]
         public void ConstructWithNullAudioClip()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
-                IClip videoClip = timeline.AddVideoGroup(24, 100, 100).AddTrack().AddVideo("1sec.wmv");
-                AudioVideoClipPair pair = new AudioVideoClipPair(null, videoClip);
+                IClip videoClip = timeline.AddVideoGroup(24, 100, 100).AddTrack().AddVideo("..\\..\\1sec.wmv");
+                var pair = new AudioVideoClipPair(null, videoClip);
             }
         }
 
-        [Test]
+        [TestMethod]
         [ExpectedException(typeof (ArgumentNullException))]
         public void ConstructWithNullVideoClip()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
-                IClip audioClip = timeline.AddAudioGroup().AddTrack().AddAudio("1sec.wav");
-                AudioVideoClipPair pair = new AudioVideoClipPair(audioClip, null);
+                IClip audioClip = timeline.AddAudioGroup().AddTrack().AddAudio("..\\..\\1sec.wav");
+                var pair = new AudioVideoClipPair(audioClip, null);
             }
         }
     }

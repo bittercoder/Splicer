@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,102 +12,126 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 using Splicer.Timeline;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Renderer
 {
-    public class WindowsMediaRenderer : AbstractRenderer
+    public class WindowsMediaRenderer : AbstractRenderer, IDisposable
     {
-        private const string AudioInputPinName = "Audio Input";
-        private const string VideoInputPinName = "Video Input";
-
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public WindowsMediaRenderer(ITimeline timeline, string file, string profileData)
             : this(timeline, file, profileData, null, null)
         {
         }
 
-        public WindowsMediaRenderer(ITimeline timeline, string file, string profileData, IDESCombineCB pVideoCallback,
-                                    IDESCombineCB pAudioCallback)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public WindowsMediaRenderer(ITimeline timeline, string file, string profileData,
+                                    ICallbackParticipant[] videoParticipants,
+                                    ICallbackParticipant[] audioParticipants)
             : base(timeline)
         {
-            RenderToAsfWriter(file, profileData, pVideoCallback, pAudioCallback);
+            RenderToAsfWriter(file, profileData, videoParticipants, audioParticipants);
 
             ChangeState(RendererState.Initialized);
         }
+
+        #region IDisposable Members
+
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
 
         private void ValidateAsfWriterIsSuitable(IBaseFilter asfWriterFilter)
         {
             foreach (PinQueryInfo info in FilterGraphTools.EnumeratePins(asfWriterFilter))
             {
-                if (info.Name.StartsWith(AudioInputPinName))
+                if (info.Name.StartsWith(Resources.AudioInputPinNamePrefix))
                 {
-                    if (!_timeline.Groups.Exists(delegate(IGroup group)
-                        {
-                            return group.Type == GroupType.Audio;
-                        }))
+                    if (!Timeline.Groups.Exists(delegate(IGroup group) { return group.Type == GroupType.Audio; }))
                     {
-                        throw new SplicerException(
-                            "The selected windows media profile encodes audio information, yet no audio group exists");
+                        throw new SplicerException(Resources.ErrorWMProfileRequiresAudioGroup);
                     }
                 }
-                else if (info.Name.StartsWith(VideoInputPinName))
+                else if (info.Name.StartsWith(Resources.VideoInputPinNamePrefix))
                 {
-                    if (!_timeline.Groups.Exists(delegate(IGroup group)
-                        {
-                            return group.Type == GroupType.Video;
-                        }))
+                    if (!Timeline.Groups.Exists(delegate(IGroup group) { return group.Type == GroupType.Video; }))
                     {
-                        throw new SplicerException(
-                            "The selected windows media profile encodes video information, yet no video group exists");
+                        throw new SplicerException(Resources.ErrorWMProfileRequiresVideoGroup);
                     }
                 }
             }
         }
 
-        protected void RenderToAsfWriter(
+        private void RenderToAsfWriter(
             string file,
             string profileData,
-            IDESCombineCB pVideoCallback,
-            IDESCombineCB pAudioCallback)
+            ICallbackParticipant[] videoParticipants,
+            ICallbackParticipant[] audioParticipants)
         {
             int hr;
 
             if (file == null)
             {
-                throw new SplicerException("Output file name cannot be null");
+                throw new SplicerException(Resources.ErrorInvalidOutputFileName);
             }
 
             // Contains useful routines for creating the graph
-            ICaptureGraphBuilder2 icgb = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
+            var graphBuilder = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
 
             try
             {
-                hr = icgb.SetFiltergraph(_graph);
+                hr = graphBuilder.SetFiltergraph(Graph);
                 DESError.ThrowExceptionForHR(hr);
 
-                IBaseFilter pMux = StandardFilters.RenderAsfWriterWithProfile(_dc, _graph, profileData, file);
+                IBaseFilter pMux = StandardFilters.RenderAsfWriterWithProfile(Cleanup, Graph, profileData, file);
 
                 ValidateAsfWriterIsSuitable(pMux);
 
-                _dc.Add(pMux);
+                Cleanup.Add(pMux);
 
                 try
                 {
-                    RenderGroups(icgb, null, null, pMux, pAudioCallback, pVideoCallback);
+                    RenderGroups(graphBuilder, null, null, pMux, audioParticipants, videoParticipants);
                 }
                 finally
                 {
                     Marshal.ReleaseComObject(pMux);
                 }
+
+                DisableClock();
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
             finally
             {
-                Marshal.ReleaseComObject(icgb);
+                Marshal.ReleaseComObject(graphBuilder);
             }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~WindowsMediaRenderer()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeRenderer(disposing);
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,38 +13,39 @@
 // limitations under the License.
 
 using System;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class AfterAddedToContainerEventArgsFixture
     {
-        [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
-        public void ConstructWithNullItem()
-        {
-            AfterClipAddedEventArgs args = new AfterClipAddedEventArgs(null, null);
-        }
-
-        [Test]
-        [ExpectedException(typeof (ArgumentNullException))]
-        public void ConstructWithNullContainer()
-        {
-            AfterClipAddedEventArgs args = new AfterClipAddedEventArgs(new MockClip(0, 10, 0), null);
-        }
-
-        [Test]
+        [TestMethod]
         public void Construct()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
                 IGroup group = timeline.AddAudioGroup();
 
-                AfterGroupAddedEventArgs args = new AfterGroupAddedEventArgs(group, timeline);
+                var args = new AddedGroupEventArgs(group, timeline);
                 Assert.AreSame(group, args.Item);
                 Assert.AreSame(timeline, args.Container);
             }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void ConstructWithNullContainer()
+        {
+            var args = new AddedClipEventArgs(new MockClip(0, 10, 0), null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void ConstructWithNullItem()
+        {
+            var args = new AddedClipEventArgs(null, null);
         }
     }
 }

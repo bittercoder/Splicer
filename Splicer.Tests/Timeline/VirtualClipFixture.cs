@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class VirtualClipFixture
     {
-        [Test]
+        [TestMethod]
         public void CompareTo()
         {
-            VirtualClip clip = new VirtualClip(0, 10, 5, new MockClip(0, 10, 5));
+            var clip = new VirtualClip(0, 10, 5, new MockClip(0, 10, 5));
             Assert.AreEqual(-1, clip.CompareTo((object) null));
             Assert.AreEqual(-1, clip.CompareTo((IClip) null));
         }
 
-        [Test]
+        [TestMethod]
         public void RetrieveNameFromUnderlyingClip()
         {
             IClip clip = new MockClip("some clip", 0, 10, 5);
-            VirtualClip virtualClip = new VirtualClip(0, 10, 5, clip);
+            var virtualClip = new VirtualClip(0, 10, 5, clip);
             Assert.AreEqual(clip.Name, virtualClip.Name);
         }
     }

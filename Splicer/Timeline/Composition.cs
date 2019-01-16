@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib.DES;
 
 namespace Splicer.Timeline
 {
-    public class Composition : AbstractComposition
+    public sealed class Composition : AbstractComposition, IDisposable
     {
-        private ICompositionContainer _container;
+        private readonly ICompositionContainer _container;
 
         public Composition(ICompositionContainer container, IAMTimeline timeline, IAMTimelineComp timelineComposition,
                            string name, int priority)
             : base(timeline, name, priority)
         {
             _container = container;
-            _timelineComposition = timelineComposition;
+            TimelineComposition = timelineComposition;
         }
 
         public override ICompositionContainer Container
@@ -34,14 +36,32 @@ namespace Splicer.Timeline
             get { return _container; }
         }
 
-        public override void Dispose()
-        {
-            base.Dispose();
+        #region IDisposable Members
 
-            if (_timelineComposition != null)
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~Composition()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        private void Dispose(bool disposing)
+        {
+            DisposeComposition(disposing);
+
+            if (TimelineComposition != null)
             {
-                Marshal.ReleaseComObject(_timelineComposition);
-                _timelineComposition = null;
+                Marshal.ReleaseComObject(TimelineComposition);
+                TimelineComposition = null;
             }
         }
     }

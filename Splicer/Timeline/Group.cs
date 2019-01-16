@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 
 namespace Splicer.Timeline
 {
@@ -28,7 +30,7 @@ namespace Splicer.Timeline
 
     public enum InsertPosition
     {
-        Absoloute,
+        Absolute,
         Relative
     }
 
@@ -36,12 +38,12 @@ namespace Splicer.Timeline
     /// Class containing information about the timeline groups (one
     /// for audio, one for video)
     /// </summary>
-    public class Group : AbstractComposition, IGroup, IDisposable
+    public sealed class Group : AbstractComposition, IGroup, IDisposable
     {
-        private GroupType _type;
-        private double _fps;
-        protected IAMTimelineGroup _group;
-        private ITimeline _timeline;
+        private readonly double _fps;
+        private readonly ITimeline _timeline;
+        private readonly GroupType _type;
+        private IAMTimelineGroup _group;
 
         /// <summary>
         /// Constructor
@@ -49,19 +51,25 @@ namespace Splicer.Timeline
         /// <param name="type">The type of group this is</param>
         /// <param name="mediaType">Media type of the new group</param>
         /// <param name="timeline">Timeline to use for the group</param>
-        /// <param name="fps">FPS for the group</param>
+        /// <param name="fps">Fps for the group</param>
         public Group(ITimeline timeline, GroupType type, AMMediaType mediaType, string name, double fps)
-            : base(timeline.DesTimeline, name, -1)
+            : base(timeline, name, -1)
         {
+            if (timeline == null) throw new ArgumentNullException("timeline");
+            if (mediaType == null) throw new ArgumentNullException("mediaType");
+            if (fps <= 0) throw new SplicerException(Resources.ErrorFramesPerSecondMustBeGreaterThenZero);
+
             _timeline = timeline;
             _type = type;
             _fps = fps;
 
-            _group = TimelineUtils.InsertGroup(_timeline.DesTimeline, mediaType, name);
-            _timelineComposition = (IAMTimelineComp) _group;
+            _group = TimelineBuilder.InsertGroup(_timeline.DesTimeline, mediaType, name);
+            TimelineComposition = (IAMTimelineComp) _group;
         }
 
-        public double FPS
+        #region IGroup Members
+
+        public double Fps
         {
             get { return _fps; }
         }
@@ -78,17 +86,11 @@ namespace Splicer.Timeline
 
         /// <summary>
         /// Release everything
-        /// </summary>
-        public override void Dispose()
+        /// </summary>        
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
         {
-            base.Dispose();
-
-            if (_group != null)
-            {
-                Marshal.ReleaseComObject(_group);
-                _group = null;
-            }
-
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -99,7 +101,29 @@ namespace Splicer.Timeline
 
         public override ICompositionContainer Container
         {
-            get { throw new SplicerException("Groups are top level timeline components and do not support this property"); }
+            get { throw new SplicerException(Resources.ErrorGroupsDontSupportContainerProperty); }
+        }
+
+        #endregion
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        private void Dispose(bool disposing)
+        {
+            DisposeComposition(disposing);
+
+            if (_group != null)
+            {
+                Marshal.ReleaseComObject(_group);
+                _group = null;
+
+                TimelineComposition = null;
+            }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~Group()
+        {
+            Dispose(false);
         }
     }
 }

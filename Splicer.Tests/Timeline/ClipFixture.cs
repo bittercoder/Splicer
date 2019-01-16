@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,72 +14,35 @@
 
 using System;
 using DirectShowLib.DES;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class ClipFixture : AbstractFixture
     {
-        [Test]
-        public void RemoveClipEventHandlers()
-        {
-            int count = 0;
-
-            EventHandler incrementBefore = new EventHandler(
-                delegate
-                    {
-                        count++;
-                    }
-                );
-
-            EventHandler<AfterEffectAddedEventArgs> incrementAfter =
-                new EventHandler<AfterEffectAddedEventArgs>(delegate
-                    {
-                        count++;
-                    });
-
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                IClip clip =
-                    timeline.AddAudioGroup().AddTrack().AddClip("testinput.wav", GroupMediaType.Audio,
-                                                                InsertPosition.Absoloute, 0, 0, -1);
-                clip.AfterEffectAdded += incrementAfter;
-                clip.BeforeEffectAdded += incrementBefore;
-
-                clip.AddEffect(0, 2, StandardEffects.CreateDefaultBlur());
-                Assert.AreEqual(2, count);
-
-                count = 0;
-                clip.AfterEffectAdded -= incrementAfter;
-                clip.BeforeEffectAdded -= incrementBefore;
-
-                clip.AddEffect(0, 2, StandardEffects.CreateDefaultBlur());
-
-                Assert.AreEqual(0, count);
-            }
-        }
-
-        [Test]
-        public void AddClipResolvesDuration()
+        [TestMethod]
+        [
+            ExpectedException(typeof (SplicerException),
+                "Missing Exception for: You can not add audio clips to a track which exists within a non-audio group")]
+        public void AddAudioClipToVideoGroup()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
-                IGroup group = timeline.AddVideoGroup(24, 64, 64);
-                ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
-                Assert.AreEqual(7.999, clip.Duration);
+                ITrack track = timeline.AddVideoGroup(24, 64, 64).AddTrack();
+                track.AddClip("wav file", "..\\..\\1sec.wav", GroupMediaType.Audio, InsertPosition.Absolute, 0, 0, -1);
             }
         }
 
-        [Test]
+        [TestMethod]
         public void AddClip()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                IClip clip = track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, -1);
                 Assert.AreSame(track, clip.Container);
                 Assert.AreSame(group, clip.Group);
                 Assert.AreEqual(1, track.Clips.Count);
@@ -88,22 +51,53 @@ namespace Splicer.Timeline.Tests
             }
         }
 
-        [Test]
-        public void AlterStretchMode()
+        [TestMethod]
+        public void AddClipIgnoresUnrequiredAssistant()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                var assistant = new MockMediaFileAssistant(false);
+                timeline.InstallAssistant(assistant);
+
+                Assert.AreEqual(0, assistant.ExecutionCount);
+
+                ITrack track = timeline.AddAudioGroup().AddTrack();
+                track.AddAudio("..\\..\\1sec.wav");
+
+                Assert.AreEqual(0, assistant.ExecutionCount);
+            }
+        }
+
+        [TestMethod]
+        public void AddClipResolvesDuration()
         {
             using (ITimeline timeline = new DefaultTimeline())
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
-                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
-
-                Assert.AreEqual(ResizeFlags.Stretch, clip.StretchMode);
-                clip.StretchMode = ResizeFlags.PreserveAspectRatio;
-                Assert.AreEqual(ResizeFlags.PreserveAspectRatio, clip.StretchMode);
+                IClip clip = track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, -1);
+                Assert.AreEqual(7.999, clip.Duration);
             }
         }
 
-        [Test]
+        [TestMethod]
+        public void AddClipUsesAssistant()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                var assistant = new MockMediaFileAssistant(true);
+                timeline.InstallAssistant(assistant);
+
+                Assert.AreEqual(0, assistant.ExecutionCount);
+
+                ITrack track = timeline.AddAudioGroup().AddTrack();
+                track.AddAudio("..\\..\\1sec.wav");
+
+                Assert.AreEqual(1, assistant.ExecutionCount);
+            }
+        }
+
+        [TestMethod]
         public void AddClipWithName()
         {
             using (ITimeline timeline = new DefaultTimeline())
@@ -111,88 +105,20 @@ namespace Splicer.Timeline.Tests
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack("root", -1);
                 IClip clip =
-                    track.AddClip("clock animation", "transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0,
+                    track.AddClip("clock animation", "..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute,
+                                  0, 0,
                                   -1);
                 Assert.AreEqual(1, track.Clips.Count);
                 Assert.AreSame(track.Clips[0], clip);
                 Assert.AreEqual("clock animation", clip.Name);
                 Assert.AreEqual(7.999, clip.Duration);
                 Assert.AreEqual(0, clip.Offset);
-                Assert.AreEqual("transitions.wmv", clip.File.FileName);
+                Assert.AreEqual("..\\..\\transitions.wmv", clip.File.FileName);
                 Assert.AreEqual(0, clip.Effects.Count);
             }
         }
 
-        [Test]
-        [
-            ExpectedException(typeof (SplicerException),
-                "You can not add audio clips to a track which exists within a non-audio group")]
-        public void AddAudioClipToVideoGroup()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                ITrack track = timeline.AddVideoGroup(24, 64, 64).AddTrack();
-                track.AddClip("wav file", "1sec.wav", GroupMediaType.Audio, InsertPosition.Absoloute, 0, 0, -1);
-            }
-        }
-
-        [Test, ExpectedException(typeof (SplicerException),
-            "You can not add video or image clips to a track which exists within a non-video group")]
-        public void AddVideoClipToAudioGroup()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                ITrack track = timeline.AddAudioGroup().AddTrack();
-                track.AddClip("wav file", "1sec.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
-            }
-        }
-
-        [Test, ExpectedException(typeof (SplicerException),
-            "You can not add video or image clips to a track which exists within a non-video group")]
-        public void AddImageClipToAudioGroup()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                ITrack track = timeline.AddAudioGroup().AddTrack();
-                track.AddClip("image file", "image1.jpg", GroupMediaType.Image, InsertPosition.Absoloute, 0, 0, -1);
-            }
-        }
-
-        [Test]
-        public void AddClipUsesAssistant()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                MockMediaFileAssistant assistant = new MockMediaFileAssistant(true);
-                timeline.InstallAssistant(assistant);
-
-                Assert.AreEqual(0, assistant.ExecutionCount);
-
-                ITrack track = timeline.AddAudioGroup().AddTrack();
-                track.AddAudio("1sec.wav");
-
-                Assert.AreEqual(1, assistant.ExecutionCount);
-            }
-        }
-
-        [Test]
-        public void AddClipIgnoresUnrequiredAssistant()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                MockMediaFileAssistant assistant = new MockMediaFileAssistant(false);
-                timeline.InstallAssistant(assistant);
-
-                Assert.AreEqual(0, assistant.ExecutionCount);
-
-                ITrack track = timeline.AddAudioGroup().AddTrack();
-                track.AddAudio("1sec.wav");
-
-                Assert.AreEqual(0, assistant.ExecutionCount);
-            }
-        }
-
-        [Test]
+        [TestMethod]
         public void AddEffectToClip()
         {
             bool beforeFired = false;
@@ -202,17 +128,11 @@ namespace Splicer.Timeline.Tests
             {
                 IGroup group = timeline.AddVideoGroup(24, 64, 64);
                 ITrack track = group.AddTrack();
-                IClip clip = track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, -1);
+                IClip clip = track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, -1);
 
-                clip.BeforeEffectAdded += new EventHandler(delegate
-                    {
-                        beforeFired = true;
-                    });
+                clip.AddingEffect += delegate { beforeFired = true; };
 
-                clip.AfterEffectAdded += new EventHandler<AfterEffectAddedEventArgs>(delegate
-                    {
-                        afterFired = true;
-                    });
+                clip.AddedEffect += delegate { afterFired = true; };
 
                 EffectDefinition defintion = StandardEffects.CreateBlurEffect(2, clip.Duration, 20);
 
@@ -231,7 +151,7 @@ namespace Splicer.Timeline.Tests
                                  @"<timeline framerate=""30.0000000"">
 	<group type=""video"" bitdepth=""24"" width=""64"" height=""64"" framerate=""30.0000000"" previewmode=""0"">
 		<track>
-			<clip start=""0"" stop=""7.9990000"" src=""transitions.wmv"" mstart=""0"">
+			<clip start=""0"" stop=""7.9990000"" src=""..\..\transitions.wmv"" mstart=""0"">
 				<effect start=""0"" stop=""7.9990000"" clsid=""{7312498D-E87A-11D1-81E0-0000F87557DB}"" username=""blur"">
 					<param name=""PixelRadius"" value=""2"">
 						<linear time=""7.9990000"" value=""20"" />
@@ -241,6 +161,74 @@ namespace Splicer.Timeline.Tests
 		</track>
 	</group>
 </timeline>");
+            }
+        }
+
+        [TestMethod, ExpectedException(typeof (SplicerException),
+            "Missing exception for: You can not add video or image clips to a track which exists within a non-video group")]
+        public void AddImageClipToAudioGroup()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                ITrack track = timeline.AddAudioGroup().AddTrack();
+                track.AddClip("image file", "..\\..\\image1.jpg", GroupMediaType.Image, InsertPosition.Absolute, 0, 0, -1);
+            }
+        }
+
+        [TestMethod, ExpectedException(typeof (SplicerException),
+            "Missing exception for: You can not add video or image clips to a track which exists within a non-video group")]
+        public void AddVideoClipToAudioGroup()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                ITrack track = timeline.AddAudioGroup().AddTrack();
+                track.AddClip("wav file", "..\\..\\1sec.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, -1);
+            }
+        }
+
+        [TestMethod]
+        public void AlterStretchMode()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                IGroup group = timeline.AddVideoGroup(24, 64, 64);
+                ITrack track = group.AddTrack("root", -1);
+                IClip clip = track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, -1);
+
+                Assert.AreEqual(ResizeFlags.Stretch, clip.StretchMode);
+                clip.StretchMode = ResizeFlags.PreserveAspectRatio;
+                Assert.AreEqual(ResizeFlags.PreserveAspectRatio, clip.StretchMode);
+            }
+        }
+
+        [TestMethod]
+        public void RemoveClipEventHandlers()
+        {
+            int count = 0;
+
+            EventHandler incrementBefore = delegate { count++; };
+
+            EventHandler<AddedEffectEventArgs> incrementAfter =
+                delegate { count++; };
+
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                IClip clip =
+                    timeline.AddAudioGroup().AddTrack().AddClip("..\\..\\testinput.wav", GroupMediaType.Audio,
+                                                                InsertPosition.Absolute, 0, 0, -1);
+                clip.AddedEffect += incrementAfter;
+                clip.AddingEffect += incrementBefore;
+
+                clip.AddEffect(0, 2, StandardEffects.CreateDefaultBlur());
+                Assert.AreEqual(2, count);
+
+                count = 0;
+                clip.AddedEffect -= incrementAfter;
+                clip.AddingEffect -= incrementBefore;
+
+                clip.AddEffect(0, 2, StandardEffects.CreateDefaultBlur());
+
+                Assert.AreEqual(0, count);
             }
         }
     }

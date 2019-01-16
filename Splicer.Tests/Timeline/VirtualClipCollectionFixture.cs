@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class VirtualClipCollectionFixture
     {
-        [Test]
+        [TestMethod]
         public void AddOneClips()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(1, 5, 2));
 
             Assert.AreEqual(1, collection[0].Offset);
@@ -32,10 +33,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(2, collection[0].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void AddTwoClips()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(0, 5, 0));
             collection.AddVirtualClip(new MockClip(5, 5, 0));
 
@@ -48,10 +49,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(0, collection[1].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void Scenario1()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(5, 10, 0));
             collection.AddVirtualClip(new MockClip(0, 7, 0));
 
@@ -65,10 +66,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(2, collection[1].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void Scenario2()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(0, 7, 0));
             collection.AddVirtualClip(new MockClip(5, 10, 0));
 
@@ -81,10 +82,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(0, collection[1].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void Scenario3()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(2, 2, 0));
             collection.AddVirtualClip(new MockClip(0, 10, 0));
 
@@ -94,10 +95,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(0, collection[0].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void Scenario4()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(0, 10, 0));
             collection.AddVirtualClip(new MockClip(2, 2, 0));
 
@@ -116,10 +117,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(4, collection[2].MediaStart);
         }
 
-        [Test]
+        [TestMethod]
         public void StronglyTypedEnumerate()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(0, 10, 0));
             collection.AddVirtualClip(new MockClip(2, 2, 0));
 
@@ -136,10 +137,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual(3, index);
         }
 
-        [Test]
+        [TestMethod]
         public void UntypedEnumerate()
         {
-            VirtualClipCollection collection = new VirtualClipCollection();
+            var collection = new VirtualClipCollection();
             collection.AddVirtualClip(new MockClip(0, 10, 0));
             collection.AddVirtualClip(new MockClip(2, 2, 0));
 

@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,17 +18,21 @@ namespace Splicer.Timeline
 {
     public class AudioVideoClipPair : IAudioVideoClipPair
     {
-        private IClip _videoClip;
-        private IClip _audioClip;
+        private const string AudioClipParameter = "audioClip";
+        private const string VideoClipParameter = "videoClip";
+        private readonly IClip _audioClip;
+        private readonly IClip _videoClip;
 
         public AudioVideoClipPair(IClip audioClip, IClip videoClip)
         {
-            if (audioClip == null) throw new ArgumentNullException("audioClip");
-            if (videoClip == null) throw new ArgumentNullException("videoClip");
+            if (audioClip == null) throw new ArgumentNullException(AudioClipParameter);
+            if (videoClip == null) throw new ArgumentNullException(VideoClipParameter);
 
             _audioClip = audioClip;
             _videoClip = videoClip;
         }
+
+        #region IAudioVideoClipPair Members
 
         public IClip AudioClip
         {
@@ -39,5 +43,7 @@ namespace Splicer.Timeline
         {
             get { return _videoClip; }
         }
+
+        #endregion
     }
 }

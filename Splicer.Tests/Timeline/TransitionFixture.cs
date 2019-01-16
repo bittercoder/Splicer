@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class TransitionFixture
     {
-        [Test]
+        [TestMethod]
+        [ExpectedException(typeof(SplicerException),
+                "Propsective transition overlaps with an existing transition at index: 0")]
+        public void AddingTransitionsChecksForOverlap()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                TransitionDefinition def = StandardTransitions.CreateIris();
+
+                IGroup group = timeline.AddAudioGroup();
+                ITransition groupTransition1 = group.AddTransition(0, 5, def, false);
+                Assert.IsFalse(groupTransition1.SwapInputs);
+
+                ITransition groupTransition2 = group.AddTransition(1, 7, def, true);
+                Assert.IsTrue(groupTransition2.SwapInputs);
+            }
+        }
+
+        [TestMethod]
         public void AddTransitionSetsAppropriateContainerAndGroup()
         {
             using (ITimeline timeline = new DefaultTimeline())
@@ -43,7 +62,7 @@ namespace Splicer.Timeline.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void AddTransitionSetsSwappedInputsProperly()
         {
             using (ITimeline timeline = new DefaultTimeline())
@@ -55,25 +74,6 @@ namespace Splicer.Timeline.Tests
                 Assert.IsFalse(groupTransition1.SwapInputs);
 
                 ITransition groupTransition2 = group.AddTransition(5, 5, def, true);
-                Assert.IsTrue(groupTransition2.SwapInputs);
-            }
-        }
-
-        [Test]
-        [
-            ExpectedException(typeof (SplicerException),
-                "Propsective transition overlaps with an existing transition at index: 0")]
-        public void AddingTransitionsChecksForOverlap()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                TransitionDefinition def = StandardTransitions.CreateIris();
-
-                IGroup group = timeline.AddAudioGroup();
-                ITransition groupTransition1 = group.AddTransition(0, 5, def, false);
-                Assert.IsFalse(groupTransition1.SwapInputs);
-
-                ITransition groupTransition2 = group.AddTransition(1, 7, def, true);
                 Assert.IsTrue(groupTransition2.SwapInputs);
             }
         }

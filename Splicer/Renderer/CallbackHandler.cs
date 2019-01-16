@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
-using Splicer.Timeline;
 
 namespace Splicer.Renderer
 {
@@ -29,119 +29,50 @@ namespace Splicer.Renderer
         /// <summary>
         /// Client callback routine
         /// </summary>
-        protected IDESCombineCB m_pCallback;
-
-        // The list of files
-        protected IGroup m_Group;
-
-        // The event sink (used to notify on end of file)
-        protected IMediaEventSink m_pEventSink;
-
-        // The event code to be used for end of file
-        protected EventCode m_ec;
-
-        // Holds the index into m_Files we are currently processing
-        protected int m_iCurFile;
-
-        // Which frame number we are currently processing
-        protected int m_iCurFrame;
-
-        // Maximum frame number for the current file
-        protected int m_iMaxFrame;
-
-        // File name of the currently processing file
-        protected string m_CurFileName;
+        private readonly ICallbackParticipant[] _participants;
 
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pGroup">Timeline group info</param>
-        /// <param name="pCallback">Client callback</param>
-        /// <param name="pEventSink">Event sync to call on file complete</param>
-        /// <param name="ec">Event code to send on file completion</param>
-        public CallbackHandler(
-            IGroup pGroup,
-            IDESCombineCB pCallback,
-            IMediaEventSink pEventSink,
-            EventCode ec
-            )
+        public CallbackHandler(params ICallbackParticipant[] participants)
         {
-            m_pCallback = pCallback;
-            m_Group = pGroup;
-            m_pEventSink = pEventSink;
-            m_ec = ec;
-
-            m_iCurFrame = 0;
-            m_iCurFile = 0;
-            // TODO: fix this or chuck it
-            MediaFile mf = null; // m_Group.File(m_iCurFile);
-            if (mf != null)
-            {
-                m_CurFileName = mf.FileName;
-                m_iMaxFrame = mf.LengthInFrames;
-            }
-            else
-            {
-                m_CurFileName = null;
-                m_iMaxFrame = int.MaxValue;
-            }
+            _participants = participants;
         }
 
+        #region ISampleGrabberCB Members
 
-        // ISampleGrabberCB methods
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public int SampleCB(double SampleTime, IMediaSample pSample)
         {
             Marshal.ReleaseComObject(pSample);
             return 0;
         }
 
+        /// <summary>
+        /// Callback for the buffer, will pass on the information to any participants assigned
+        /// to this instance.  Each participant is invoked in turn, until they are exhausted, or
+        /// they return a value other then 0 (S_OK)
+        /// </summary>
+        /// <param name="SampleTime"></param>
+        /// <param name="pBuffer"></param>
+        /// <param name="BufferLen"></param>
+        /// <returns></returns>
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public int BufferCB(double SampleTime, IntPtr pBuffer, int BufferLen)
         {
-            // Call the client
-            int iRet;
+            int result = 0;
 
-            if (m_pCallback != null)
+            if ((_participants != null) && (_participants.Length > 0))
             {
-                iRet = m_pCallback.BufferCB(m_CurFileName, SampleTime, pBuffer, BufferLen);
-            }
-            else
-            {
-                iRet = 0;
-            }
-
-            m_iCurFrame++;
-
-            // Have we finished the current file?
-            if (m_iCurFrame >= m_iMaxFrame)
-            {
-                // Send the notification
-                int hr = m_pEventSink.Notify(m_ec, m_iCurFile, m_iCurFrame);
-
-                // Find the next file
-                m_iCurFile++;
-
-                // TODO: get this working again
-                //int count = m_Group.Count;
-                int count = 0;
-
-                if (m_iCurFile < count)
+                foreach (ICallbackParticipant participant in _participants)
                 {
-                    // TODO: get this working again
-                    //MediaFile mf = m_Group.File(m_iCurFile);
-                    MediaFile mf = null;
-                    m_CurFileName = mf.FileName;
-                    m_iMaxFrame += mf.LengthInFrames;
-                }
-                else
-                {
-                    // A failsafe
-                    m_iMaxFrame = int.MaxValue;
+                    result = participant.ProcessBuffer(SampleTime, pBuffer, BufferLen);
+                    if (result != 0) break;
                 }
             }
 
-            return iRet;
+            return result;
         }
+
+        #endregion
     }
 }

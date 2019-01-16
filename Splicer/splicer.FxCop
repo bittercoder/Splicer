@@ -1,0 +1,958 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FxCopProject Version="1.35" Name="My FxCop Project">
+ <ProjectOptions>
+  <SharedProject>True</SharedProject>
+  <Stylesheet Apply="False">http://www.gotdotnet.com/team/fxcop//xsl/1.35/FxCopReport.xsl</Stylesheet>
+  <SaveMessages>
+   <Project Status="Active, Excluded" NewOnly="False" />
+   <Report Status="Active" NewOnly="False" />
+  </SaveMessages>
+  <ProjectFile Compress="True" DefaultTargetCheck="True" DefaultRuleCheck="True" SaveByRuleGroup="" Deterministic="True" />
+  <EnableMultithreadedLoad>True</EnableMultithreadedLoad>
+  <EnableMultithreadedAnalysis>True</EnableMultithreadedAnalysis>
+  <SourceLookup>True</SourceLookup>
+  <AnalysisExceptionsThreshold>10</AnalysisExceptionsThreshold>
+  <RuleExceptionsThreshold>1</RuleExceptionsThreshold>
+  <Spelling Locale="en-us" />
+  <VersionAware>False</VersionAware>
+  <OverrideRuleVisibilities>False</OverrideRuleVisibilities>
+  <CustomDictionaries SearchFxCopDir="True" SearchUserProfile="True" SearchProjectDir="True" />
+  <SearchGlobalAssemblyCache>False</SearchGlobalAssemblyCache>
+  <DeadlockDetectionTimeout>120</DeadlockDetectionTimeout>
+ </ProjectOptions>
+ <Targets>
+  <Target Name="$(ProjectDir)/../Splicer.Contrib/bin/Debug/Splicer.Contrib.dll" Analyze="True" AnalyzeAllChildren="True" />
+  <Target Name="$(ProjectDir)/bin/Debug/Splicer.dll" Analyze="True" AnalyzeAllChildren="True" />
+ </Targets>
+ <Rules>
+  <RuleFiles>
+   <RuleFile Name="$(FxCopDir)\Rules\DesignRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\GlobalizationRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\InteroperabilityRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\MobilityRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\NamingRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\PerformanceRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\PortabilityRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\SecurityRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\UsageRules.dll" Enabled="True" AllRulesEnabled="True" />
+  </RuleFiles>
+  <Groups />
+  <Settings />
+ </Rules>
+ <FxCopReport Version="1.35">
+  <Namespaces>
+   <Namespace Name="Splicer">
+    <Messages>
+     <Message TypeName="AvoidNamespacesWithFewTypes" Category="Microsoft.Design" CheckId="CA1020" Status="Excluded" Created="2006-09-28 00:27:08Z">
+      <Issue>
+       <Item>Splicer</Item>
+      </Issue>
+      <Notes>
+       <User Name="Administrator">
+        <Note Id="2" />
+       </User>
+      </Notes>
+     </Message>
+    </Messages>
+   </Namespace>
+   <Namespace Name="Splicer.Contrib.QuickTime">
+    <Messages>
+     <Message TypeName="AvoidNamespacesWithFewTypes" Category="Microsoft.Design" CheckId="CA1020" Status="Excluded" Created="2006-09-28 23:43:03Z">
+      <Issue>
+       <Item>Splicer.Contrib.QuickTime</Item>
+      </Issue>
+      <Notes>
+       <User Name="Administrator">
+        <Note Id="9" />
+       </User>
+      </Notes>
+     </Message>
+     <Message Id="Contrib" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 23:32:16Z">
+      <Issue Name="Namespace">
+       <Item>Contrib</Item>
+       <Item>Splicer.Contrib.QuickTime</Item>
+      </Issue>
+      <Notes>
+       <User Name="Administrator">
+        <Note Id="7" />
+       </User>
+      </Notes>
+     </Message>
+    </Messages>
+   </Namespace>
+   <Namespace Name="Splicer.Renderer">
+    <Messages>
+     <Message Id="Renderer" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+      <Issue Name="Namespace">
+       <Item>Renderer</Item>
+       <Item>Splicer.Renderer</Item>
+      </Issue>
+      <Notes>
+       <User Name="Administrator">
+        <Note Id="4" />
+       </User>
+      </Notes>
+     </Message>
+     <Message Id="Splicer" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+      <Issue Name="Namespace">
+       <Item>Splicer</Item>
+       <Item>Splicer.Renderer</Item>
+      </Issue>
+      <Notes>
+       <User Name="Administrator">
+        <Note Id="5" />
+       </User>
+      </Notes>
+     </Message>
+    </Messages>
+   </Namespace>
+  </Namespaces>
+  <Targets>
+   <Target Name="$(ProjectDir)/../Splicer.Contrib/bin/Debug/Splicer.Contrib.dll">
+    <Modules>
+     <Module Name="splicer.contrib.dll">
+      <Namespaces>
+       <Namespace Name="Splicer.Contrib.QuickTime">
+        <Types>
+         <Type Name="GrouperQuickTimeWrapper">
+          <Members>
+           <Member Name="Dispose(System.Boolean):System.Void">
+            <Messages>
+             <Message Id="disposing" TypeName="ReviewUnusedParameters" Category="Microsoft.Usage" CheckId="CA1801" Status="Excluded" Created="2006-09-28 23:43:03Z" FixCategory="NonBreaking">
+              <Issue>
+               <Item>disposing</Item>
+               <Item>GrouperQuickTimeWrapper.Dispose(Boolean):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="16" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
+      </Namespaces>
+     </Module>
+    </Modules>
+   </Target>
+   <Target Name="$(ProjectDir)/bin/Debug/Splicer.dll">
+    <Modules>
+     <Module Name="splicer.dll">
+      <Namespaces>
+       <Namespace Name="Splicer.Renderer">
+        <Types>
+         <Type Name="AbstractProgressParticipant">
+          <Members>
+           <Member Name="ProcessBuffer(System.Double,System.IntPtr,System.Int32):System.Int32">
+            <Messages>
+             <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>AbstractProgressParticipant.ProcessBuffer(Double, IntPtr, Int32):Int32</Item>
+               <Item>System.Object</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="23" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="AbstractRenderer">
+          <Messages>
+           <Message Id="Renderer" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+            <Issue Name="Type">
+             <Item>Renderer</Item>
+             <Item>Splicer.Renderer.AbstractRenderer</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="8" />
+             </User>
+            </Notes>
+           </Message>
+           <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Excluded" Created="2006-09-28 00:51:43Z" FixCategory="Breaking">
+            <Issue>
+             <Item>Splicer.Renderer.AbstractRenderer</Item>
+             <Item>Splicer.Renderer.RendererAsyncResult, Splicer.Utilities.DisposalCleanup</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="14" />
+             </User>
+            </Notes>
+           </Message>
+          </Messages>
+          <Members>
+           <Member Name="EventWait():System.Void">
+            <Messages>
+             <Message Id="exitCode" TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>AbstractRenderer.EventWait():Void</Item>
+               <Item>exitCode</Item>
+               <Item>DirectShowLib.EventCode</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="15" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="RendererState">
+          <Messages>
+           <Message Id="Renderer" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+            <Issue Name="Type">
+             <Item>Renderer</Item>
+             <Item>Splicer.Renderer.RendererState</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="6" />
+             </User>
+            </Notes>
+           </Message>
+          </Messages>
+         </Type>
+        </Types>
+       </Namespace>
+       <Namespace Name="Splicer.Timeline">
+        <Types>
+         <Type Name="Effect">
+          <Members>
+           <Member Name="Dispose(System.Boolean):System.Void">
+            <Messages>
+             <Message Id="disposing" TypeName="ReviewUnusedParameters" Category="Microsoft.Usage" CheckId="CA1801" Status="Excluded" Created="2006-09-28 04:12:01Z" FixCategory="Breaking">
+              <Issue>
+               <Item>disposing</Item>
+               <Item>Effect.Dispose(Boolean):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="20" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="StandardEffects">
+          <Members>
+           <Member Name="CreateAudioEnvelope(System.Double,System.Double,System.Double,System.Double):Splicer.Timeline.EffectDefinition">
+            <Messages>
+             <Message Id="fadeOut" TypeName="CompoundWordsShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1702" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="ShouldBeDiscreteTerm">
+               <Item>fadeOut</Item>
+               <Item>parameter</Item>
+               <Item>fadeOutDuration</Item>
+               <Item>fadeout</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="22" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="Transition">
+          <Members>
+           <Member Name="Dispose(System.Boolean):System.Void">
+            <Messages>
+             <Message Id="disposing" TypeName="ReviewUnusedParameters" Category="Microsoft.Usage" CheckId="CA1801" Status="Excluded" Created="2006-09-28 04:12:01Z" FixCategory="NonBreaking">
+              <Issue>
+               <Item>disposing</Item>
+               <Item>Transition.Dispose(Boolean):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="19" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="VirtualClip">
+          <Members>
+           <Member Name="op_Equality(Splicer.Timeline.VirtualClip,Splicer.Timeline.VirtualClip):System.Boolean">
+            <Messages>
+             <Message TypeName="ValidateArgumentsOfPublicMethods" Category="Microsoft.Design" CheckId="CA1062" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>'r1'</Item>
+               <Item>VirtualClip.op_Equality(VirtualClip, VirtualClip):Boolean</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="12" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="op_GreaterThan(Splicer.Timeline.VirtualClip,Splicer.Timeline.VirtualClip):System.Boolean">
+            <Messages>
+             <Message TypeName="ValidateArgumentsOfPublicMethods" Category="Microsoft.Design" CheckId="CA1062" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>'r1'</Item>
+               <Item>VirtualClip.op_GreaterThan(VirtualClip, VirtualClip):Boolean</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="13" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="op_LessThan(Splicer.Timeline.VirtualClip,Splicer.Timeline.VirtualClip):System.Boolean">
+            <Messages>
+             <Message TypeName="ValidateArgumentsOfPublicMethods" Category="Microsoft.Design" CheckId="CA1062" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>'r1'</Item>
+               <Item>VirtualClip.op_LessThan(VirtualClip, VirtualClip):Boolean</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="11" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
+       <Namespace Name="Splicer.Utilities">
+        <Types>
+         <Type Name="MediaTypeTools">
+          <Members>
+           <Member Name="GetAudioMediaType():DirectShowLib.AMMediaType">
+            <Messages>
+             <Message TypeName="UsePropertiesWhereAppropriate" Category="Microsoft.Design" CheckId="CA1024" Status="Excluded" Created="2006-09-28 05:42:24Z">
+              <Issue Certainty="50">
+               <Item>GetAudioMediaType</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="35" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetMediaSubTypeForBitCount(System.Int16):System.Guid">
+            <Messages>
+             <Message Id="SubType" TypeName="CompoundWordsShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1702" Status="Excluded" Created="2006-09-28 05:42:24Z">
+              <Issue Name="ShouldBeDiscreteTerm">
+               <Item>SubType</Item>
+               <Item>method</Item>
+               <Item>GetMediaSubTypeForBitCount</Item>
+               <Item>Subtype</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="36" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
+       <Namespace Name="Splicer.Utilities.Audio">
+        <Types>
+         <Type Name="AudioCompressor">
+          <Members>
+           <Member Name="Dispose(System.Boolean):System.Void">
+            <Messages>
+             <Message Id="disposing" TypeName="ReviewUnusedParameters" Category="Microsoft.Usage" CheckId="CA1801" Status="Excluded" Created="2006-09-28 23:17:02Z" FixCategory="NonBreaking">
+              <Issue>
+               <Item>disposing</Item>
+               <Item>AudioCompressor.Dispose(Boolean):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="3" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="AudioFormat">
+          <Members>
+           <Member Name="CompactDiscQualityStereoPcm">
+            <Messages>
+             <Message Id="Pcm" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Pcm</Item>
+               <Item>AudioFormat.CompactDiscQualityStereoPcm:AudioFormat</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="DefaultOggMode3Plus">
+            <Messages>
+             <Message Id="Ogg" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Ogg</Item>
+               <Item>AudioFormat.DefaultOggMode3Plus:AudioFormat</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="LowQualityMonoOggMode3Plus">
+            <Messages>
+             <Message Id="Ogg" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Ogg</Item>
+               <Item>AudioFormat.LowQualityMonoOggMode3Plus:AudioFormat</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="LowQualityMonoPcm">
+            <Messages>
+             <Message Id="Pcm" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Pcm</Item>
+               <Item>AudioFormat.LowQualityMonoPcm:AudioFormat</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="OggMode3PlusFriendlyName">
+            <Messages>
+             <Message Id="Ogg" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Ogg</Item>
+               <Item>AudioFormat.OggMode3PlusFriendlyName</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="PcmFriendlyName">
+            <Messages>
+             <Message Id="Pcm" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-10-02 05:07:46Z">
+              <Issue Name="Member">
+               <Item>Pcm</Item>
+               <Item>AudioFormat.PcmFriendlyName</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="17" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
+       <Namespace Name="Splicer.WindowsMedia">
+        <Types>
+         <Type Name="AmAsfWriterConfigParam">
+          <Messages>
+           <Message Id="Asf" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+            <Issue Name="Type">
+             <Item>Asf</Item>
+             <Item>Splicer.WindowsMedia.AmAsfWriterConfigParam</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="33" />
+             </User>
+            </Notes>
+           </Message>
+           <Message Id="Param" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+            <Issue Name="Type">
+             <Item>Param</Item>
+             <Item>Splicer.WindowsMedia.AmAsfWriterConfigParam</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="33" />
+             </User>
+            </Notes>
+           </Message>
+          </Messages>
+          <Members>
+           <Member Name="DontCompress">
+            <Messages>
+             <Message Id="Dont" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Dont</Item>
+               <Item>AmAsfWriterConfigParam.DontCompress</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="Multipass">
+            <Messages>
+             <Message Id="Multipass" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Multipass</Item>
+               <Item>AmAsfWriterConfigParam.Multipass</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+         <Type Name="IConfigAsfWriter2">
+          <Messages>
+           <Message Id="Asf" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+            <Issue Name="Type">
+             <Item>Asf</Item>
+             <Item>Splicer.WindowsMedia.IConfigAsfWriter2</Item>
+            </Issue>
+            <Notes>
+             <User Name="Administrator">
+              <Note Id="33" />
+             </User>
+            </Notes>
+           </Message>
+          </Messages>
+          <Members>
+           <Member Name="ConfigureFilterUsingProfile(System.IntPtr):System.Void">
+            <Messages>
+             <Message Id="0#p" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.ConfigureFilterUsingProfile(IntPtr):Void</Item>
+               <Item>p</Item>
+               <Item>pProfile</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="ConfigureFilterUsingProfileGuid(System.Guid&amp;):System.Void">
+            <Messages>
+             <Message Id="0#" TypeName="DoNotPassTypesByReference" Category="Microsoft.Design" CheckId="CA1045" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Certainty="50">
+               <Item>guidProfile</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetCurrentProfile():System.IntPtr">
+            <Messages>
+             <Message TypeName="UsePropertiesWhereAppropriate" Category="Microsoft.Design" CheckId="CA1024" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Certainty="50">
+               <Item>GetCurrentProfile</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetCurrentProfileGuid(System.Guid&amp;):System.Void">
+            <Messages>
+             <Message Id="0#" TypeName="AvoidOutParameters" Category="Microsoft.Design" CheckId="CA1021" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>pProfileGuid</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="0#p" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.GetCurrentProfileGuid(Guid&amp;):Void</Item>
+               <Item>p</Item>
+               <Item>pProfileGuid</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="24" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetCurrentProfileId():System.UInt32">
+            <Messages>
+             <Message TypeName="UsePropertiesWhereAppropriate" Category="Microsoft.Design" CheckId="CA1024" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Certainty="50">
+               <Item>GetCurrentProfileId</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetIndexMode(System.Boolean&amp;):System.Void">
+            <Messages>
+             <Message Id="0#" TypeName="AvoidOutParameters" Category="Microsoft.Design" CheckId="CA1021" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>pbIndexFile</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="GetParam(Splicer.WindowsMedia.AmAsfWriterConfigParam,System.UInt32&amp;,System.UInt32&amp;):System.Void">
+            <Messages>
+             <Message Id="1#" TypeName="AvoidOutParameters" Category="Microsoft.Design" CheckId="CA1021" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>pdwParam1</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="2#" TypeName="AvoidOutParameters" Category="Microsoft.Design" CheckId="CA1021" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue>
+               <Item>pdwParam2</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="0" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="0#Param" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.GetParam(AmAsfWriterConfigParam, UInt32&amp;, UInt32&amp;):Void</Item>
+               <Item>Param</Item>
+               <Item>dwParam</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="31" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="1#pdw" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.GetParam(AmAsfWriterConfigParam, UInt32&amp;, UInt32&amp;):Void</Item>
+               <Item>pdw</Item>
+               <Item>pdwParam1</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="28" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="2#pdw" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.GetParam(AmAsfWriterConfigParam, UInt32&amp;, UInt32&amp;):Void</Item>
+               <Item>pdw</Item>
+               <Item>pdwParam2</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="29" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="Param" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Param</Item>
+               <Item>IConfigAsfWriter2.GetParam(AmAsfWriterConfigParam, UInt32&amp;, UInt32&amp;):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="30" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="ResetMultiPassState():System.Void">
+            <Messages>
+             <Message Id="Multi" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Multi</Item>
+               <Item>IConfigAsfWriter2.ResetMultiPassState():Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="SetIndexMode(System.Boolean):System.Void">
+            <Messages>
+             <Message Id="0#b" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.SetIndexMode(Boolean):Void</Item>
+               <Item>b</Item>
+               <Item>bIndexFile</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="25" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="SetParam(Splicer.WindowsMedia.AmAsfWriterConfigParam,System.UInt32,System.UInt32):System.Void">
+            <Messages>
+             <Message Id="0#Param" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.SetParam(AmAsfWriterConfigParam, UInt32, UInt32):Void</Item>
+               <Item>Param</Item>
+               <Item>dwParam</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="27" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="Param" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Param</Item>
+               <Item>IConfigAsfWriter2.SetParam(AmAsfWriterConfigParam, UInt32, UInt32):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="26" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+           <Member Name="StreamNumFromPin(DirectShowLib.IPin,System.Int16):System.Void">
+            <Messages>
+             <Message Id="0#p" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.StreamNumFromPin(IPin, Int16):Void</Item>
+               <Item>p</Item>
+               <Item>pPin</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="1#Num" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Parameter">
+               <Item>IConfigAsfWriter2.StreamNumFromPin(IPin, Int16):Void</Item>
+               <Item>Num</Item>
+               <Item>pwStreamNum</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="32" />
+               </User>
+              </Notes>
+             </Message>
+             <Message Id="Num" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Excluded" Created="2006-09-28 00:27:08Z">
+              <Issue Name="Member">
+               <Item>Num</Item>
+               <Item>IConfigAsfWriter2.StreamNumFromPin(IPin, Int16):Void</Item>
+              </Issue>
+              <Notes>
+               <User Name="Administrator">
+                <Note Id="33" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
+      </Namespaces>
+      <Resources>
+       <Resource Name="Splicer.Properties.Resources.resources">
+        <Messages>
+         <Message Id="Edia" TypeName="ResourceStringsShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1703" Status="Excluded" Created="2006-09-28 01:37:47Z">
+          <Issue>
+           <Item>Edia</Item>
+           <Item>UnsupportedAMMEdiaType</Item>
+           <Item>Unsupported AMMEdiaType encountered</Item>
+           <Item>Splicer.Properties.Resources.resources</Item>
+          </Issue>
+          <Notes>
+           <User Name="Administrator">
+            <Note Id="10" />
+           </User>
+          </Notes>
+         </Message>
+         <Message Id="renderer" TypeName="ResourceStringsShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1703" Status="Excluded" Created="2006-09-28 00:51:43Z">
+          <Issue>
+           <Item>renderer</Item>
+           <Item>ErrorAttemptToCancelWhenCancelingOrCompleting</Item>
+           <Item>You can not cancel this renderer, it is already completing/canceling</Item>
+           <Item>Splicer.Properties.Resources.resources</Item>
+          </Issue>
+          <Notes>
+           <User Name="Administrator">
+            <Note Id="1" />
+           </User>
+          </Notes>
+         </Message>
+        </Messages>
+       </Resource>
+      </Resources>
+     </Module>
+    </Modules>
+   </Target>
+  </Targets>
+  <Notes>
+   <User Name="Administrator">
+    <Note Id="0" Modified="2006-09-28 00:54:56Z">not my interface</Note>
+    <Note Id="1" Modified="2006-09-28 00:56:19Z">renderer is a word</Note>
+    <Note Id="2" Modified="2006-09-28 00:56:27Z">it's just the way it is</Note>
+    <Note Id="3" Modified="2006-09-28 23:23:06Z">consistent with other disposal behaviour</Note>
+    <Note Id="4" Modified="2006-09-28 00:57:55Z">renderer is a word</Note>
+    <Note Id="5" Modified="2006-09-28 00:58:03Z">splicer is our product name</Note>
+    <Note Id="6" Modified="2006-09-28 00:58:13Z">renderer is a real world</Note>
+    <Note Id="7" Modified="2006-09-28 23:38:32Z">Contributed is to long</Note>
+    <Note Id="8" Modified="2006-09-28 00:58:43Z">Renderer is a word</Note>
+    <Note Id="9" Modified="2006-09-28 23:50:30Z">who cares</Note>
+    <Note Id="10" Modified="2006-09-28 01:38:07Z">it's spelt right</Note>
+    <Note Id="11" Modified="2006-09-28 02:10:33Z">null is meaningfull</Note>
+    <Note Id="12" Modified="2006-09-28 02:10:40Z">null is meaningfull</Note>
+    <Note Id="13" Modified="2006-09-28 02:10:46Z">null is meaningfull</Note>
+    <Note Id="14" Modified="2006-09-28 02:22:18Z">This class is abstract, we expect all extenders to implement apropriate disposable behaviour.</Note>
+    <Note Id="15" Modified="2006-09-28 03:16:20Z">Plan to implement this later</Note>
+    <Note Id="16" Modified="2006-09-28 23:50:37Z">consistent with others</Note>
+    <Note Id="17" Modified="2006-10-02 05:08:07Z">is spelt correctly</Note>
+    <Note Id="19" Modified="2006-09-28 04:13:02Z">just in case</Note>
+    <Note Id="20" Modified="2006-09-28 04:13:06Z">just in case</Note>
+    <Note Id="22" Modified="2006-09-28 04:42:46Z">fade out are two terms</Note>
+    <Note Id="23" Modified="2006-09-28 05:30:13Z">This is necessary to avoid throwing exception when we need a meaningful error code returned for callback.</Note>
+    <Note Id="24" Modified="2006-09-28 05:31:43Z">not my interface</Note>
+    <Note Id="25" Modified="2006-09-28 05:31:48Z">not my interface</Note>
+    <Note Id="26" Modified="2006-09-28 05:32:57Z">not my interface</Note>
+    <Note Id="27" Modified="2006-09-28 05:33:02Z">not my interface</Note>
+    <Note Id="28" Modified="2006-09-28 05:33:08Z">not my interface</Note>
+    <Note Id="29" Modified="2006-09-28 05:33:13Z">not my interface</Note>
+    <Note Id="30" Modified="2006-09-28 05:33:18Z">not my interface</Note>
+    <Note Id="31" Modified="2006-09-28 05:33:25Z">not my interface</Note>
+    <Note Id="32" Modified="2006-09-28 05:33:31Z">not my interface</Note>
+    <Note Id="33" Modified="2006-09-28 05:33:41Z">not my interface</Note>
+    <Note Id="35" Modified="2006-09-28 05:50:57Z">aligns with the GetVideoMediaType</Note>
+    <Note Id="36" Modified="2006-09-28 05:51:43Z">usage is SubType, like DirectShow.Net library</Note>
+   </User>
+  </Notes>
+  <Rules>
+   <Rule TypeName="AvoidNamespacesWithFewTypes" Category="Microsoft.Design" CheckId="CA1020">
+    <Resolution Name="Default">Consider merging the types defined in '{0}' with another namespace.</Resolution>
+   </Rule>
+   <Rule TypeName="AvoidOutParameters" Category="Microsoft.Design" CheckId="CA1021">
+    <Resolution Name="Default">Consider a design that does not require that '{0}' be an out parameter.</Resolution>
+   </Rule>
+   <Rule TypeName="CompoundWordsShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1702">
+    <Resolution Name="ShouldBeDiscreteTerm">The compound word '{0}' in {1} '{2}' exists as a discrete term. If your usage is intended to be single word, case it as '{3}'.</Resolution>
+   </Rule>
+   <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
+    <Resolution Name="Default">Modify '{0}' to catch a more specific exception than '{1}' or rethrow the exception.</Resolution>
+   </Rule>
+   <Rule TypeName="DoNotPassTypesByReference" Category="Microsoft.Design" CheckId="CA1045">
+    <Resolution Name="Default">Consider a design that does not require that '{0}' be a reference parameter.</Resolution>
+   </Rule>
+   <Rule TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704">
+    <Resolution Name="Member">Correct the spelling of the unrecognized token '{0}' in member name '{1}'.</Resolution>
+    <Resolution Name="Namespace">Correct the spelling of the unrecognized token '{0}' in namespace '{1}'.</Resolution>
+    <Resolution Name="Parameter">In method {0}, correct the spelling of the unrecognized token '{1}' in parameter name '{2}' or strip it entirely if it represents any sort of hungarian notation.</Resolution>
+    <Resolution Name="Type">Correct the spelling of the unrecognized token '{0}' in type name '{1}'.</Resolution>
+   </Rule>
+   <Rule TypeName="RemoveUnusedLocals" Category="Microsoft.Performance" CheckId="CA1804">
+    <Resolution Name="Default">{0} declares a local, '{1}', of type {2}, which is never used or is only assigned to. Use this local or remove it.</Resolution>
+   </Rule>
+   <Rule TypeName="ResourceStringsShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1703">
+    <Resolution Name="Default">Correct the spelling of '{0}' in '{1}' == '{2}' contained in resource stream '{3}'.</Resolution>
+   </Rule>
+   <Rule TypeName="ReviewUnusedParameters" Category="Microsoft.Usage" CheckId="CA1801">
+    <Resolution Name="Default">Parameter '{0}' of {1} is never used. Remove the parameter or use it in the method body.</Resolution>
+   </Rule>
+   <Rule TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001">
+    <Resolution Name="Default">Implement IDisposable on '{0}' as it instantiates members of the following IDisposable types: {1}</Resolution>
+   </Rule>
+   <Rule TypeName="UsePropertiesWhereAppropriate" Category="Microsoft.Design" CheckId="CA1024">
+    <Resolution Name="Default">Change '{0}' to a property if appropriate.</Resolution>
+   </Rule>
+   <Rule TypeName="ValidateArgumentsOfPublicMethods" Category="Microsoft.Design" CheckId="CA1062">
+    <Resolution Name="Default">Validate parameter {0} passed to externally visible method {1}.</Resolution>
+   </Rule>
+  </Rules>
+ </FxCopReport>
+</FxCopProject>

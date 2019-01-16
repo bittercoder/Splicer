@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class GroupFixture
     {
-        [Test]
+        [TestMethod]
         [
             ExpectedException(typeof (SplicerException),
                 "Groups are top level timeline components and do not support this property")]
@@ -32,7 +33,7 @@ namespace Splicer.Timeline.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void GetGroupGroup()
         {
             using (ITimeline timeline = new DefaultTimeline())

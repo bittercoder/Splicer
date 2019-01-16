@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
 
 using System;
 using DirectShowLib.DES;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Timeline.Tests
 {
     public class MockClip : IClip
     {
-        private double _offset;
-        private double _duration;
-        private double _mediaStart;
-        private string _name;
+        private readonly double _duration;
+        private readonly double _mediaStart;
+        private readonly string _name;
+        private readonly double _offset;
 
         public MockClip(string name, double offset, double duration, double mediaStart)
         {
@@ -37,6 +37,8 @@ namespace Splicer.Timeline.Tests
             : this(null, offset, duration, mediaStart)
         {
         }
+
+        #region IClip Members
 
         public ResizeFlags StretchMode
         {
@@ -74,9 +76,13 @@ namespace Splicer.Timeline.Tests
             get { return _name; }
         }
 
-        public event EventHandler<AfterEffectAddedEventArgs> AfterEffectAdded;
+#pragma warning disable 67
 
-        public event EventHandler BeforeEffectAdded;
+        public event EventHandler<AddedEffectEventArgs> AddedEffect;
+
+        public event EventHandler AddingEffect;
+
+#pragma warning restore 67
 
         public IEffect AddEffect(double offset, double duration, EffectDefinition effectDefinition)
         {
@@ -89,7 +95,7 @@ namespace Splicer.Timeline.Tests
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public AddOnlyList<IEffect> Effects
+        public AddOnlyCollection<IEffect> Effects
         {
             get { throw new Exception("The method or operation is not implemented."); }
         }
@@ -102,5 +108,7 @@ namespace Splicer.Timeline.Tests
         {
             get { throw new Exception("The method or operation is not implemented."); }
         }
+
+        #endregion
     }
 }

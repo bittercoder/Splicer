@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,42 +13,37 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Splicer.Timeline;
-using Splicer.Utils;
 
 namespace Splicer.Tests.Timeline
 {
-    [TestFixture]
+    [TestClass]
     public class EffectDefinitionFixture
     {
-        [Test]
+        [TestMethod]
         public void Constructor1()
         {
-            EffectDefinition definition = new EffectDefinition();
+            var definition = new EffectDefinition();
             Assert.AreEqual(Guid.Empty, definition.EffectId);
             Assert.AreEqual(0, definition.Parameters.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void Constructor2()
         {
-            EffectDefinition definition = new EffectDefinition(DxtSubObjects.sIEMatrixFxGuid);
-            Assert.AreEqual(DxtSubObjects.sIEMatrixFxGuid, definition.EffectId);
+            var definition = new EffectDefinition(StandardEffects.MatrixEffect);
+            Assert.AreEqual(StandardEffects.MatrixEffect, definition.EffectId);
             Assert.AreEqual(0, definition.Parameters.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void SetValues()
         {
-            EffectDefinition definition = new EffectDefinition();
-            List<Parameter> newParams = new List<Parameter>();
-            definition.Parameters = newParams;
-            Assert.AreSame(newParams, definition.Parameters);
-
-            definition.EffectId = DxtSubObjects.AudioMixer;
-            Assert.AreEqual(definition.EffectId, DxtSubObjects.AudioMixer);
+            var definition = new EffectDefinition();
+            definition.EffectId = StandardEffects.AudioMixerEffect;
+            Assert.AreEqual(definition.EffectId, StandardEffects.AudioMixerEffect);
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib.DES;
 
 namespace Splicer.Timeline
 {
-    public class Transition : ITransition
+    public sealed class Transition : ITransition
     {
-        private string _name;
-        private double _offset;
-        private double _duration;
-        private bool _swapInputs;
-        private TransitionDefinition _transitionDefinition;
+        private readonly ITransitionContainer _container;
+        private readonly double _duration;
+        private readonly string _name;
+        private readonly double _offset;
+        private readonly bool _swapInputs;
+        private readonly TransitionDefinition _transitionDefinition;
         private IAMTimelineObj _timelineObj;
-        private ITransitionContainer _container;
 
         public Transition(ITransitionContainer container, IAMTimelineObj timelineObj, string name, double offset,
                           double duration, bool swapInputs,
@@ -77,11 +79,17 @@ namespace Splicer.Timeline
             get { return _transitionDefinition; }
         }
 
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         #endregion
 
-        #region IDisposable Members
-
-        public void Dispose()
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        private void Dispose(bool disposing)
         {
             if (_timelineObj != null)
             {
@@ -90,6 +98,10 @@ namespace Splicer.Timeline
             }
         }
 
-        #endregion
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~Transition()
+        {
+            Dispose(false);
+        }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,73 +12,111 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 using Splicer.Timeline;
 
 namespace Splicer.Renderer
 {
-    public class AviFileRenderer : AbstractRenderer
+    public class AviFileRenderer : AbstractRenderer, IDisposable
     {
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public AviFileRenderer(ITimeline timeline, string outputFile)
             : this(timeline, outputFile, null, null, null, null)
         {
         }
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public AviFileRenderer(ITimeline timeline, string outputFile, IBaseFilter videoCompressor,
-                               IBaseFilter audioCompressor, IDESCombineCB pVideoCallback,
-                               IDESCombineCB pAudioCallback)
+                               IBaseFilter audioCompressor, ICallbackParticipant[] videoParticipants,
+                               ICallbackParticipant[] audioParticipants)
             : base(timeline)
         {
-            RenderToAVI(outputFile, videoCompressor, audioCompressor, pVideoCallback, pAudioCallback);
+            RenderToAVI(outputFile, videoCompressor, audioCompressor, videoParticipants, audioParticipants);
 
             ChangeState(RendererState.Initialized);
         }
 
-        private void RenderToAVI(
-            string sOutputFile,
-            IBaseFilter ibfVideoCompressor,
-            IBaseFilter ibfAudioCompressor,
-            IDESCombineCB pVideoCallback,
-            IDESCombineCB pAudioCallback)
+        #region IDisposable Members
+
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
         {
-            if (_firstVideoGroup == null)
-            {
-                throw new SplicerException("Can not render to AVI when no video group exists");
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Renders to AVI.
+        /// </summary>
+        /// <param name="outputFile">The output file.</param>
+        /// <param name="videoCompressor">The video compressor.</param>
+        /// <param name="audioCompressor">The audio compressor.</param>
+        /// <param name="videoParticipants">The video participants.</param>
+        /// <param name="audioParticipants">The audio participants.</param>
+        private void RenderToAVI(
+            string outputFile,
+            IBaseFilter videoCompressor,
+            IBaseFilter audioCompressor,
+            ICallbackParticipant[] videoParticipants,
+            ICallbackParticipant[] audioParticipants)
+        {
+            if (string.IsNullOrEmpty(outputFile)) throw new ArgumentNullException("outputFile");
+            if (FirstVideoGroup == null)
+                throw new SplicerException(Resources.ErrorCanNotRenderAviWhenNoVideoGroupExists);
 
             int hr;
 
-            if (sOutputFile == null)
+            if (outputFile == null)
             {
-                throw new SplicerException("Output file name cannot be null");
+                throw new SplicerException(Resources.ErrorInvalidOutputFileName);
             }
 
             // Contains useful routines for creating the graph
-            ICaptureGraphBuilder2 icgb = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
+            var graphBuilder = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
 
             try
             {
-                hr = icgb.SetFiltergraph(_graph);
+                hr = graphBuilder.SetFiltergraph(Graph);
                 DESError.ThrowExceptionForHR(hr);
 
                 // Create the file writer
-                IBaseFilter pMux = StandardFilters.RenderAviDest(_dc, icgb, sOutputFile);
+                IBaseFilter multiplexer = StandardFilters.RenderAviDestination(Cleanup, graphBuilder, outputFile);
 
                 try
                 {
-                    RenderGroups(icgb, ibfAudioCompressor, ibfVideoCompressor, pMux, pAudioCallback, pVideoCallback);
+                    RenderGroups(graphBuilder, audioCompressor, videoCompressor, multiplexer, audioParticipants,
+                                 videoParticipants);
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(pMux);
+                    Marshal.ReleaseComObject(multiplexer);
                 }
+
+                DisableClock();
             }
             finally
             {
-                Marshal.ReleaseComObject(icgb);
+                Marshal.ReleaseComObject(graphBuilder);
             }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~AviFileRenderer()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeRenderer(disposing);
         }
     }
 }
