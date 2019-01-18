@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,68 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+using System;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Splicer.Renderer;
 using Splicer.Timeline;
 
 namespace Splicer.Tests.Renderer
 {
-    [TestFixture]
+    [TestClass]
     public class AviFileRendererFixture : AbstractFixture
     {
-        [Test]
-        [ExpectedException(typeof (SplicerException), "Can not render to AVI when no video group exists")]
-        public void RenderWithoutVideo()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                timeline.AddAudioGroup();
-
-                using (IRenderer renderer = new AviFileRenderer(timeline, null))
-                {
-                    renderer.Render();
-                }
-            }
-        }
-
-        [Test]
-        [ExpectedException(typeof (SplicerException), "Output file name cannot be null")]
-        public void RenderWithNoFilename()
-        {
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                IGroup group = timeline.AddVideoGroup(24, 100, 80);
-                ITrack track = group.AddTrack();
-                track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
-
-                using (IRenderer renderer = new AviFileRenderer(timeline, null))
-                {
-                    renderer.Render();
-                }
-            }
-        }
-
-        [Test]
-        public void RenderVideoOnly()
-        {
-            string outputFile = "RenderVideoOnly.avi";
-
-            using (ITimeline timeline = new DefaultTimeline())
-            {
-                IGroup group = timeline.AddVideoGroup(24, 100, 80);
-                ITrack track = group.AddTrack();
-                track.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
-
-                using (IRenderer renderer = new AviFileRenderer(timeline, outputFile))
-                {
-                    renderer.Render();
-                }
-
-                AssertLengths(timeline, 2, outputFile);
-            }
-        }
-
-        [Test]
+        [TestMethod]
         public void RenderVideoAndAudio()
         {
             string outputFile = "RenderVideoAndAudio.avi";
@@ -82,18 +32,70 @@ namespace Splicer.Tests.Renderer
             {
                 IGroup videoGroup = timeline.AddVideoGroup(24, 100, 80);
                 ITrack videoTrack = videoGroup.AddTrack();
-                videoTrack.AddClip("transitions.wmv", GroupMediaType.Video, InsertPosition.Absoloute, 0, 0, 2);
+                videoTrack.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 3, 5);
 
                 IGroup audioGroup = timeline.AddAudioGroup();
                 ITrack audioTrack = audioGroup.AddTrack();
-                audioTrack.AddClip("testinput.wav", GroupMediaType.Audio, InsertPosition.Absoloute, 0, 0, 2);
+                audioTrack.AddClip("..\\..\\testinput.wav", GroupMediaType.Audio, InsertPosition.Absolute, 0, 0, 2);
 
-                using (IRenderer renderer = new AviFileRenderer(timeline, outputFile))
+                using (var renderer = new AviFileRenderer(timeline, outputFile))
                 {
                     renderer.Render();
                 }
 
                 AssertLengths(timeline, 2, outputFile);
+            }
+        }
+
+        [TestMethod]
+        public void RenderVideoOnly()
+        {
+            string outputFile = "RenderVideoOnly.avi";
+
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                IGroup group = timeline.AddVideoGroup(24, 100, 80);
+                ITrack track = group.AddTrack();
+                track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 2, 4);
+
+                using (var renderer = new AviFileRenderer(timeline, outputFile))
+                {
+                    renderer.Render();
+                }
+
+                AssertLengths(timeline, 2, outputFile);
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void RenderWithNoFileName()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                IGroup group = timeline.AddVideoGroup(24, 100, 80);
+                ITrack track = group.AddTrack();
+                track.AddClip("..\\..\\transitions.wmv", GroupMediaType.Video, InsertPosition.Absolute, 0, 0, 2);
+
+                using (var renderer = new AviFileRenderer(timeline, null))
+                {
+                    renderer.Render();
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof (ArgumentNullException))]
+        public void RenderWithoutVideo()
+        {
+            using (ITimeline timeline = new DefaultTimeline())
+            {
+                timeline.AddAudioGroup();
+
+                using (var renderer = new AviFileRenderer(timeline, null))
+                {
+                    renderer.Render();
+                }
             }
         }
     }

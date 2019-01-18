@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ namespace Splicer.Timeline.Tests
 {
     public class MockMediaFileAssistant : IMediaFileAssistant, IDisposable
     {
+        private readonly bool _willAssist;
         private int _executionCount;
-        private bool _willAssist;
 
         public MockMediaFileAssistant(bool willAssist)
         {
@@ -32,6 +32,16 @@ namespace Splicer.Timeline.Tests
             get { return _executionCount; }
         }
 
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            _executionCount = ExecutionCount + 1;
+            ;
+        }
+
+        #endregion
+
         #region IMediaFileAssistant Members
 
         public bool WillAssist(MediaFile file)
@@ -42,16 +52,6 @@ namespace Splicer.Timeline.Tests
         public IDisposable Assist(MediaFile file)
         {
             return this;
-        }
-
-        #endregion
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            _executionCount = ExecutionCount + 1;
-            ;
         }
 
         #endregion

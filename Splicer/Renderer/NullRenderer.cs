@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
 using Splicer.Timeline;
@@ -23,49 +25,78 @@ namespace Splicer.Renderer
     /// Renders the audio and or video to nowhere, normally used during testing
     /// or where the result of the callbacks are being consumed (frame grabs)
     /// </summary>
-    public class NullRenderer : AbstractRenderer
+    public class NullRenderer : AbstractRenderer, IDisposable
     {
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public NullRenderer(ITimeline timeline)
             : this(timeline, null, null)
         {
         }
 
-        public NullRenderer(ITimeline timeline, IDESCombineCB audioCallback, IDESCombineCB videoCallback)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public NullRenderer(ITimeline timeline, ICallbackParticipant[] audioParticipants,
+                            ICallbackParticipant[] videoParticipants)
             : base(timeline)
         {
-            RenderToNullRenderer(audioCallback, videoCallback);
+            RenderToNullRenderer(audioParticipants, videoParticipants);
 
             ChangeState(RendererState.Initialized);
         }
 
-        private void RenderToNullRenderer(IDESCombineCB audioCallback, IDESCombineCB videoCallback)
+        #region IDisposable Members
+
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        private void RenderToNullRenderer(ICallbackParticipant[] audioParticipants,
+                                          ICallbackParticipant[] videoParticipants)
         {
             int hr;
 
-            ICaptureGraphBuilder2 icgb = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
+            var graphBuilder = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
 
             try
             {
-                hr = icgb.SetFiltergraph(_graph);
+                hr = graphBuilder.SetFiltergraph(Graph);
                 DESError.ThrowExceptionForHR(hr);
 
-                IBaseFilter audioDest = StandardFilters.RenderNull(_dc, _graph);
-                IBaseFilter videoDest = StandardFilters.RenderNull(_dc, _graph);
+                IBaseFilter audioDest = StandardFilters.RenderNull(Cleanup, Graph);
+                IBaseFilter videoDest = StandardFilters.RenderNull(Cleanup, Graph);
 
                 try
                 {
-                    RenderGroups(icgb, null, null, audioDest, videoDest, audioCallback, videoCallback);
+                    RenderGroups(graphBuilder, null, null, audioDest, videoDest, audioParticipants, videoParticipants);
                 }
                 finally
                 {
                     if (audioDest != null) Marshal.ReleaseComObject(audioDest);
                     if (videoDest != null) Marshal.ReleaseComObject(videoDest);
                 }
+
+                DisableClock();
             }
             finally
             {
-                Marshal.ReleaseComObject(icgb);
+                Marshal.ReleaseComObject(graphBuilder);
             }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~NullRenderer()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeRenderer(disposing);
         }
     }
 }

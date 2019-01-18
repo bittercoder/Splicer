@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using System.Threading;
 using System.Xml;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 using Splicer.Timeline;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Renderer
 {
@@ -31,84 +33,79 @@ namespace Splicer.Renderer
         GraphCompleting,
         GraphCompleted,
         Cancelling,
-        Cancelled
+        Canceled
     }
 
     public abstract class AbstractRenderer : IRenderer
     {
-        private event EventHandler _renderCompleted;
-
-        /// <summary>
-        /// the state of the renderer
-        /// </summary>
-        protected RendererState _state = RendererState.Initializing;
-
-        /// <summary>
-        /// Object we lock against to avoid cross-thread problems with setting state.
-        /// </summary>
-        protected object _stateLock = new object();
-
-        /// <summary>
-        /// Event code indicating a video file has finished being processed
-        /// </summary>
-        protected const EventCode EC_VideoFileComplete = (EventCode) 0x8000;
-
-        /// <summary>
-        /// Event code indicating an audio file has finished being processed
-        /// </summary>
-        protected const EventCode EC_AudioFileComplete = (EventCode) 0x8001;
-
-        /// <summary>
-        /// The timeline this class will render into a graph
-        /// </summary>
-        protected ITimeline _timeline;
-
-        /// <summary>
-        /// IGraphBuilder object for the timeline
-        /// </summary>
-        protected IGraphBuilder _graph;
-
-        /// <summary>
-        /// Media control interface from _graph
-        /// </summary>
-        protected IMediaControl _mediaControl;
-
-        /// <summary>
-        /// the first video group, or null if no video
-        /// </summary>
-        protected IGroup _firstVideoGroup;
+        private const string DestinationParameterName = "destination";
+        private const string GraphBuilderParameterName = "graphBuilder";
+        private const string PinParameterName = "pin";
+        private const string TimelineParameterName = "timeline";
 
         /// <summary>
         /// The first audio group, or null if no audio
         /// </summary>
-        protected IGroup _firstAudioGroup;
+        private readonly IGroup _firstAudioGroup;
+
+        /// <summary>
+        /// the first video group, or null if no video
+        /// </summary>
+        private readonly IGroup _firstVideoGroup;
+
+        private readonly object _renderLock = new object();
+
+        /// <summary>
+        /// Object we lock against to avoid cross-thread problems with setting state.
+        /// </summary>
+        private readonly object _stateLock = new object();
+
+        private RendererAsyncResult _cancelResult;
+
+        /// <summary>
+        /// Handles cleanup of objects we aren't retaining references to
+        /// </summary>
+        private DisposalCleanup _cleanup = new DisposalCleanup();
+
+        /// <summary>
+        /// IGraphBuilder object for the timeline
+        /// </summary>
+        private IGraphBuilder _graph;
+
+        /// <summary>
+        /// Media control interface from _graph
+        /// </summary>
+        private IMediaControl _mediaControl;
 
         /// <summary>
         /// The engine to process the timeline (can't be released
         /// until the graph processing is complete)
         /// </summary>
-        protected IRenderEngine _renderEngine;
+        private IRenderEngine _renderEngine;
+
+        private RendererAsyncResult _renderResult;
 
         /// <summary>
-        /// Handles cleanup of objects we aren't retaining references to
+        /// the state of the renderer
         /// </summary>
-        protected DisposalCleanup _dc = new DisposalCleanup();
+        private RendererState _state = RendererState.Initializing;
 
-        protected RendererAsyncResult _renderResult;
+        /// <summary>
+        /// The timeline this class will render into a graph
+        /// </summary>
+        private ITimeline _timeline;
 
-        protected RendererAsyncResult _cancelResult;
-
-        protected readonly object _renderLock = new object();
-
-        public AbstractRenderer(ITimeline timeline)
+        protected AbstractRenderer(ITimeline timeline)
         {
+            if (timeline == null) throw new ArgumentNullException(TimelineParameterName);
+
             _timeline = timeline;
 
             int hr = 0;
 
             // create the render engine
             _renderEngine = (IRenderEngine) new RenderEngine();
-            _dc.Add(_renderEngine);
+            _cleanup.Add(_renderEngine);
 
             // tell the render engine about the timeline it should use
             hr = _renderEngine.SetTimelineObject(_timeline.DesTimeline);
@@ -120,7 +117,7 @@ namespace Splicer.Renderer
 
             // Get the filtergraph - used all over the place
             hr = _renderEngine.GetFilterGraph(out _graph);
-            _dc.Add(_graph);
+            _cleanup.Add(Graph);
             DESError.ThrowExceptionForHR(hr);
 
             // find the first (and usually last) audio and video group, we use these
@@ -128,6 +125,41 @@ namespace Splicer.Renderer
             _firstAudioGroup = _timeline.FindFirstGroupOfType(GroupType.Audio);
             _firstVideoGroup = _timeline.FindFirstGroupOfType(GroupType.Video);
         }
+
+        protected IRenderEngine RenderEngine
+        {
+            get { return _renderEngine; }
+        }
+
+        protected IGroup FirstVideoGroup
+        {
+            get { return _firstVideoGroup; }
+        }
+
+        protected IGroup FirstAudioGroup
+        {
+            get { return _firstAudioGroup; }
+        }
+
+        protected DisposalCleanup Cleanup
+        {
+            get { return _cleanup; }
+        }
+
+        protected ITimeline Timeline
+        {
+            get { return _timeline; }
+        }
+
+        /// <summary>
+        /// IGraphBuilder object for the timeline
+        /// </summary>
+        protected IGraphBuilder Graph
+        {
+            get { return _graph; }
+        }
+
+        #region IRenderer Members
 
         public RendererState State
         {
@@ -140,14 +172,6 @@ namespace Splicer.Renderer
             remove { _renderCompleted -= value; }
         }
 
-        protected void OnRenderCompleted()
-        {
-            if (_renderCompleted != null)
-            {
-                _renderCompleted(this, EventArgs.Empty);
-            }
-        }
-
         /// <summary>
         /// Returns an XML description of the capture graph (as seen by DES).
         /// </summary>
@@ -156,6 +180,7 @@ namespace Splicer.Renderer
         /// want to make sure changes to implementation don't alter the expected DES capture graph).
         /// </remarks>
         /// <returns>String containing XML</returns>
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public string ToXml()
         {
             IXml2Dex pXML;
@@ -179,214 +204,10 @@ namespace Splicer.Renderer
             return NormalizeXml(sRet);
         }
 
-        public string NormalizeXml(string input)
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void SaveToGraphFile(string fileName)
         {
-            input = input.Substring(input.IndexOf('<')).Substring(0, input.LastIndexOf('>'));
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(input);
-            return doc.OuterXml;
-        }
-
-        public void SaveToGraphFile(string filename)
-        {
-            FilterGraphTools.SaveGraphFile(_graph, filename);
-        }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            if (_dc != null)
-            {
-                ((IDisposable) _dc).Dispose();
-                _dc = null;
-            }
-
-            if (_timeline != null)
-            {
-                _timeline.Dispose();
-                _timeline = null;
-            }
-
-            if (_renderEngine != null)
-            {
-                Marshal.ReleaseComObject(_renderEngine);
-                _renderEngine = null;
-            }
-
-            if (_mediaControl != null)
-            {
-                Marshal.ReleaseComObject(_mediaControl);
-                _mediaControl = null;
-            }
-
-            if (_graph != null)
-            {
-                Marshal.ReleaseComObject(_graph);
-                _graph = null;
-            }
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Common routine used by RenderTo*  
-        /// </summary>
-        /// <param name="icgb">ICaptureGraphBuilder2 to use</param>
-        /// <param name="pCallback">Callback to use (or null)</param>
-        /// <param name="sType">string to use in creating filter graph object descriptions</param>
-        /// <param name="pPin">Pin to connect from</param>
-        /// <param name="ibfCompressor">Compressor to use, or null for none</param>
-        /// <param name="pOutput">Endpoint (renderer or file writer) to connect to</param>        
-        protected void RenderHelper(ICaptureGraphBuilder2 icgb, CallbackHandler pCallback, string sType, IPin pPin,
-                                    IBaseFilter ibfCompressor, IBaseFilter pOutput)
-        {
-            int hr;
-            IBaseFilter ibfSampleGrabber = null;
-
-            try
-            {
-                // If no callback was provided, don't create a samplegrabber
-                if (pCallback != null)
-                {
-                    ISampleGrabber isg = (ISampleGrabber) new SampleGrabber();
-                    ibfSampleGrabber = (IBaseFilter) isg;
-                    _dc.Add(ibfSampleGrabber);
-
-                    hr = isg.SetCallback(pCallback, 1);
-                    DESError.ThrowExceptionForHR(hr);
-
-                    hr = _graph.AddFilter(ibfSampleGrabber, sType + " sample grabber");
-                    DESError.ThrowExceptionForHR(hr);
-                }
-
-                // If a compressor was provided, add it to the graph and connect it up
-                if (ibfCompressor != null)
-                {
-                    // Connect the pin.
-                    hr = _graph.AddFilter(ibfCompressor, sType + " Compressor");
-                    DESError.ThrowExceptionForHR(hr);
-
-                    FilterGraphTools.ConnectFilters(_graph, pPin, ibfSampleGrabber, true);
-
-                    FilterGraphTools.ConnectFilters(_graph, ibfSampleGrabber, ibfCompressor, true);
-
-                    FilterGraphTools.ConnectFilters(_graph, ibfCompressor, pOutput, true);
-                }
-                else
-                {
-                    // Just connect the SampleGrabber (if any)
-                    hr = icgb.RenderStream(null, null, pPin, ibfSampleGrabber, pOutput);
-                    DESError.ThrowExceptionForHR(hr);
-                }
-            }
-            finally
-            {
-                if (ibfSampleGrabber != null)
-                {
-                    Marshal.ReleaseComObject(ibfSampleGrabber);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called from RenderWindow to add the renderer to the graph, create a sample grabber, add it 
-        /// to the graph and connect it all up
-        /// </summary>
-        /// <param name="icgb">ICaptureGraphBuilder2 to use</param>
-        /// <param name="pCallback">ICaptureGraphBuilder2 to use</param>
-        /// <param name="sType">String to use in creating filter graph object descriptions</param>
-        /// <param name="pPin">Pin to connect from</param>
-        /// <param name="ibfRenderer">Renderer to add</param>
-        protected void RenderWindowHelper(ICaptureGraphBuilder2 icgb, CallbackHandler pCallback, string sType, IPin pPin,
-                                          IBaseFilter ibfRenderer)
-        {
-            int hr;
-
-            // Add the renderer to the graph
-            hr = _graph.AddFilter(ibfRenderer, sType + " Renderer");
-            _dc.Add(ibfRenderer);
-            DESError.ThrowExceptionForHR(hr);
-
-            // Do everything else
-            RenderHelper(icgb, pCallback, sType, pPin, null, ibfRenderer);
-        }
-
-        protected void RenderGroups(ICaptureGraphBuilder2 icgb, IBaseFilter audioCompressor, IBaseFilter videoCompressor,
-                                    IBaseFilter pMux, IDESCombineCB pAudioCallback, IDESCombineCB pVideoCallback)
-        {
-            RenderGroups(icgb, audioCompressor, videoCompressor, pMux, pMux, pAudioCallback, pVideoCallback);
-        }
-
-        protected void RenderGroups(ICaptureGraphBuilder2 icgb, IBaseFilter audioCompressor, IBaseFilter videoCompressor,
-                                    IBaseFilter audioDest, IBaseFilter videoDest, IDESCombineCB pAudioCallback,
-                                    IDESCombineCB pVideoCallback)
-        {
-            int hr = 0;
-
-            if (audioCompressor != null) _dc.Add(audioCompressor);
-            if (videoCompressor != null) _dc.Add(videoCompressor);
-            if (audioDest != null) _dc.Add(audioDest);
-            if ((videoDest != null) && (audioDest != videoDest)) _dc.Add(videoDest);
-
-            IAMTimeline desTimeline = _timeline.DesTimeline;
-
-            int NumGroups;
-            hr = desTimeline.GetGroupCount(out NumGroups);
-            DESError.ThrowExceptionForHR(hr);
-
-            // Walk the groups.  For this class, there is one group that 
-            // contains all the video, and a second group for the audio.
-            for (int i = (NumGroups - 1); i >= 0; i--)
-            {
-                IAMTimelineObj pGroup;
-
-                hr = desTimeline.GetGroup(out pGroup, i);
-                DESError.ThrowExceptionForHR(hr);
-
-                try
-                {
-                    // Inform the graph we will be writing to disk (rather than previewing)
-                    IAMTimelineGroup pTLGroup = (IAMTimelineGroup) pGroup;
-                    hr = pTLGroup.SetPreviewMode(false);
-                    DESError.ThrowExceptionForHR(hr);
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(pGroup);
-                }
-
-                IPin pPin;
-
-                // Get the IPin for the current group
-                hr = _renderEngine.GetGroupOutputPin(i, out pPin);
-                _dc.Add(pPin);
-                DESError.ThrowExceptionForHR(hr);
-
-                try
-                {
-                    if (PinUtils.IsVideo(pPin))
-                    {
-                        // Create a sample grabber, add it to the graph and connect it all up
-                        CallbackHandler mcb =
-                            new CallbackHandler(_firstVideoGroup, pVideoCallback, (IMediaEventSink) _graph,
-                                                EC_VideoFileComplete);
-                        RenderHelper(icgb, mcb, "Video", pPin, videoCompressor, videoDest);
-                    }
-                    else
-                    {
-                        // Create a sample grabber, add it to the graph and connect it all up
-                        CallbackHandler mcb =
-                            new CallbackHandler(_firstAudioGroup, pAudioCallback, (IMediaEventSink) _graph,
-                                                EC_AudioFileComplete);
-                        RenderHelper(icgb, mcb, "Audio", pPin, audioCompressor, audioDest);
-                    }
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(pPin);
-                }
-            }
+            FilterGraphTools.SaveGraphFile(Graph, fileName);
         }
 
         /// <summary>
@@ -401,8 +222,7 @@ namespace Splicer.Renderer
             {
                 if ((_renderResult != null) && (_renderResult.Consumed))
                 {
-                    throw new SplicerException(
-                        "A previous render request has not yet been completed - have you remembered to call EndRender?");
+                    throw new SplicerException(Resources.ErrorPreviousRenderRequestInProgress);
                 }
 
                 ChangeState(RendererState.GraphStarted);
@@ -428,37 +248,21 @@ namespace Splicer.Renderer
             EndCancel(result);
         }
 
-        private void StartRender()
-        {
-            int hr;
-
-            _mediaControl = (IMediaControl) _graph;
-            _dc.Add(_mediaControl);
-
-            Thread eventThread = new Thread(new ThreadStart(EventWait));
-            eventThread.Name = "Media Event Thread";
-            eventThread.Start();
-
-            hr = _mediaControl.Run();
-            DESError.ThrowExceptionForHR(hr);
-        }
-
         public IAsyncResult BeginCancel(AsyncCallback callback, object state)
         {
             lock (_renderLock)
             {
                 if ((_cancelResult != null) && (!_cancelResult.Consumed))
                 {
-                    throw new SplicerException(
-                        "You can not cancel, a request to cancel has already been issued - have you remembered to call EndCancel?");
+                    throw new SplicerException(Resources.ErrorAttemptToCancelWhenCancelInProgress);
                 }
                 else if (_state < RendererState.GraphStarted)
                 {
-                    throw new SplicerException("Graph not yet started");
+                    throw new SplicerException(Resources.ErrorGraphNotYetStarted);
                 }
                 else if (_state >= RendererState.GraphCompleting)
                 {
-                    throw new SplicerException("You can not cancel this renderer, it is already completing/canceling");
+                    throw new SplicerException(Resources.ErrorAttemptToCancelWhenCancelingOrCompleting);
                 }
 
                 ChangeState(RendererState.GraphStarted, RendererState.Cancelling);
@@ -477,12 +281,12 @@ namespace Splicer.Renderer
                 {
                     if (_cancelResult != result)
                     {
-                        throw new SplicerException("The supplied async result was not issued by this instance");
+                        throw new SplicerException(Resources.ErrorAsyncResultNotIssuesByThisInstance);
                     }
 
                     if (_cancelResult.Consumed)
                     {
-                        throw new SplicerException("EndCancel has already been called fo this async result");
+                        throw new SplicerException(Resources.ErrorEndCancelAlreadyCalledForAsyncResult);
                     }
 
                     _cancelResult.AsyncWaitHandle.WaitOne();
@@ -491,16 +295,15 @@ namespace Splicer.Renderer
 
                     if (_cancelResult.Exception != null)
                     {
-                        throw new SplicerException(
-                            "Exception occured while attempting to cancel render request, see inner exception for details",
-                            _cancelResult.Exception);
+                        throw new SplicerException(Resources.ErrorExceptionOccuredDuringCancelRenderRequest,
+                                                   _cancelResult.Exception);
                     }
 
                     _cancelResult = null;
                 }
                 else
                 {
-                    throw new SplicerException("You must call BeginCancel before EndCancel");
+                    throw new SplicerException(Resources.ErrorMustCallBeginCancelBeforeEndCancel);
                 }
             }
         }
@@ -513,12 +316,12 @@ namespace Splicer.Renderer
                 {
                     if (_renderResult != result)
                     {
-                        throw new SplicerException("The supplied async result was not issued by this instance");
+                        throw new SplicerException(Resources.ErrorAsyncResultNotIssuesByThisInstance);
                     }
 
                     if (_renderResult.Consumed)
                     {
-                        throw new SplicerException("EndRender has already been called for this async result");
+                        throw new SplicerException(Resources.ErrorEndRenderAlreadyCalledForAsyncResult);
                     }
 
                     _renderResult.AsyncWaitHandle.WaitOne();
@@ -527,20 +330,264 @@ namespace Splicer.Renderer
 
                     if (_renderResult.Exception != null)
                     {
-                        throw new SplicerException(
-                            "Exception occured while attempting to render, see inner exception for details",
-                            _cancelResult.Exception);
+                        throw new SplicerException(Resources.ErrorExceptionOccuredDuringRenderRequest,
+                                                   _cancelResult.Exception);
                     }
-                    else if (_renderResult.Cancelled)
+                    else if (_renderResult.Canceled)
                     {
-                        throw new SplicerException("The render request was cancelled by the user");
+                        throw new SplicerException(Resources.ErrorRenderRequestCanceledByUser);
                     }
                 }
                 else
                 {
-                    throw new SplicerException("You must call BeginCancel before EndCancel");
+                    throw new SplicerException(Resources.ErrorMustCallBeginRenderBeforeEndRender);
                 }
             }
+        }
+
+        #endregion
+
+        private event EventHandler _renderCompleted;
+
+        protected void OnRenderCompleted()
+        {
+            if (_renderCompleted != null)
+            {
+                _renderCompleted(this, EventArgs.Empty);
+            }
+        }
+
+        private static string NormalizeXml(string input)
+        {
+            input = input.Substring(input.IndexOf('<')).Substring(0, input.LastIndexOf('>'));
+            var doc = new XmlDocument();
+            doc.LoadXml(input);
+            return doc.OuterXml;
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void DisposeRenderer(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_cleanup != null)
+                {
+                    (_cleanup).Dispose();
+                    _cleanup = null;
+                }
+
+                if (_timeline != null)
+                {
+                    _timeline.Dispose();
+                    _timeline = null;
+                }
+            }
+
+            if (_renderEngine != null)
+            {
+                Marshal.ReleaseComObject(_renderEngine);
+                _renderEngine = null;
+            }
+
+            if (_mediaControl != null)
+            {
+                Marshal.ReleaseComObject(_mediaControl);
+                _mediaControl = null;
+            }
+
+            if (Graph != null)
+            {
+                Marshal.ReleaseComObject(Graph);
+                _graph = null;
+            }
+        }
+
+        /// <summary>
+        /// Common routine used by RenderTo*  
+        /// </summary>
+        /// <param name="graphBuilder">ICaptureGraphBuilder2 to use</param>
+        /// <param name="callback">Callback to use (or null)</param>
+        /// <param name="typeName">string to use in creating filter graph object descriptions</param>
+        /// <param name="pin">Pin to connect from</param>
+        /// <param name="compressor">Compressor to use, or null for none</param>
+        /// <param name="destination">Endpoint (renderer or file writer) to connect to</param>        
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected void RenderHelper(ICaptureGraphBuilder2 graphBuilder, ISampleGrabberCB callback, string typeName,
+                                    IPin pin,
+                                    IBaseFilter compressor, IBaseFilter destination)
+        {
+            if (graphBuilder == null) throw new ArgumentNullException(GraphBuilderParameterName);
+            if (pin == null) throw new ArgumentNullException(PinParameterName);
+            if (destination == null) throw new ArgumentNullException(DestinationParameterName);
+
+            int hr;
+            IBaseFilter ibfSampleGrabber = null;
+
+            try
+            {
+                // If no callback was provided, don't create a samplegrabber
+                if (callback != null)
+                {
+                    var isg = (ISampleGrabber) new SampleGrabber();
+                    ibfSampleGrabber = (IBaseFilter) isg;
+                    _cleanup.Add(ibfSampleGrabber);
+
+                    hr = isg.SetCallback(callback, 1);
+                    DESError.ThrowExceptionForHR(hr);
+
+                    hr = Graph.AddFilter(ibfSampleGrabber, typeName + " sample grabber");
+                    DESError.ThrowExceptionForHR(hr);
+                }
+
+                // If a compressor was provided, add it to the graph and connect it up
+                if (compressor != null)
+                {
+                    // Connect the pin.
+                    hr = Graph.AddFilter(compressor, typeName + " Compressor");
+                    DESError.ThrowExceptionForHR(hr);
+
+                    FilterGraphTools.ConnectFilters(Graph, pin, ibfSampleGrabber, true);
+
+                    FilterGraphTools.ConnectFilters(Graph, ibfSampleGrabber, compressor, true);
+
+                    FilterGraphTools.ConnectFilters(Graph, compressor, destination, true);
+                }
+                else
+                {
+                    // Just connect the SampleGrabber (if any)
+                    hr = graphBuilder.RenderStream(null, null, pin, ibfSampleGrabber, destination);
+                    DESError.ThrowExceptionForHR(hr);
+                }
+            }
+            finally
+            {
+                if (ibfSampleGrabber != null)
+                {
+                    Marshal.ReleaseComObject(ibfSampleGrabber);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called from RenderWindow to add the renderer to the graph, create a sample grabber, add it 
+        /// to the graph and connect it all up
+        /// </summary>
+        /// <param name="graphBuilder">ICaptureGraphBuilder2 to use</param>
+        /// <param name="callback">ICaptureGraphBuilder2 to use</param>
+        /// <param name="typeName">String to use in creating filter graph object descriptions</param>
+        /// <param name="pin">Pin to connect from</param>
+        /// <param name="renderer">Renderer to add</param>
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected void RenderWindowHelper(ICaptureGraphBuilder2 graphBuilder, ISampleGrabberCB callback, string typeName,
+                                          IPin pin,
+                                          IBaseFilter renderer)
+        {
+            int hr;
+
+            // Add the renderer to the graph
+            hr = Graph.AddFilter(renderer, typeName + " Renderer");
+            _cleanup.Add(renderer);
+            DESError.ThrowExceptionForHR(hr);
+
+            // Do everything else
+            RenderHelper(graphBuilder, callback, typeName, pin, null, renderer);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected void RenderGroups(ICaptureGraphBuilder2 graphBuilder, IBaseFilter audioCompressor,
+                                    IBaseFilter videoCompressor,
+                                    IBaseFilter multiplexer, ICallbackParticipant[] audioParticipants,
+                                    ICallbackParticipant[] videoParticipants)
+        {
+            RenderGroups(graphBuilder, audioCompressor, videoCompressor, multiplexer, multiplexer, audioParticipants,
+                         videoParticipants);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected void RenderGroups(ICaptureGraphBuilder2 graphBuilder, IBaseFilter audioCompressor,
+                                    IBaseFilter videoCompressor,
+                                    IBaseFilter audioDestination, IBaseFilter videoDestination,
+                                    ICallbackParticipant[] audioParticipants,
+                                    ICallbackParticipant[] videoParticipants)
+        {
+            int hr = 0;
+
+            if (audioCompressor != null) _cleanup.Add(audioCompressor);
+            if (videoCompressor != null) _cleanup.Add(videoCompressor);
+            if (audioDestination != null) _cleanup.Add(audioDestination);
+            if ((videoDestination != null) && (audioDestination != videoDestination)) _cleanup.Add(videoDestination);
+
+            IAMTimeline desTimeline = _timeline.DesTimeline;
+
+            int groupCount;
+            hr = desTimeline.GetGroupCount(out groupCount);
+            DESError.ThrowExceptionForHR(hr);
+
+            // Walk the groups.  For this class, there is one group that 
+            // contains all the video, and a second group for the audio.
+            for (int i = (groupCount - 1); i >= 0; i--)
+            {
+                IAMTimelineObj group;
+
+                hr = desTimeline.GetGroup(out group, i);
+                DESError.ThrowExceptionForHR(hr);
+
+                try
+                {
+                    // Inform the graph we will be writing to disk (rather than previewing)
+                    var timelineGroup = (IAMTimelineGroup) group;
+                    hr = timelineGroup.SetPreviewMode(false);
+                    DESError.ThrowExceptionForHR(hr);
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(group);
+                }
+
+                IPin pPin;
+
+                // Get the IPin for the current group
+                hr = _renderEngine.GetGroupOutputPin(i, out pPin);
+                _cleanup.Add(pPin);
+                DESError.ThrowExceptionForHR(hr);
+
+                try
+                {
+                    if (FilterGraphTools.IsVideo(pPin))
+                    {
+                        // Create a sample grabber, add it to the graph and connect it all up
+                        var mcb =
+                            new CallbackHandler(videoParticipants);
+                        RenderHelper(graphBuilder, mcb, "Video", pPin, videoCompressor, videoDestination);
+                    }
+                    else
+                    {
+                        // Create a sample grabber, add it to the graph and connect it all up
+                        var mcb =
+                            new CallbackHandler(audioParticipants);
+                        RenderHelper(graphBuilder, mcb, "Audio", pPin, audioCompressor, audioDestination);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(pPin);
+                }
+            }
+        }
+
+        private void StartRender()
+        {
+            int hr;
+
+            _mediaControl = (IMediaControl) Graph;
+            _cleanup.Add(_mediaControl);
+
+            var eventThread = new Thread(EventWait);
+            eventThread.Name = Resources.MediaEventThreadName;
+            eventThread.Start();
+
+            hr = _mediaControl.Run();
+            DESError.ThrowExceptionForHR(hr);
         }
 
         /// <summary>
@@ -555,11 +602,11 @@ namespace Splicer.Renderer
                 const int E_ABORT = unchecked((int) 0x80004004);
 
                 int hr;
-                int p1, p2;
+                IntPtr p1, p2;
                 EventCode ec;
-                EventCode exitCode = 0;
-
-                IMediaEvent pEvent = (IMediaEvent) _graph;
+                // TODO: present the event code in the OnCompleted event
+                EventCode exitCode;
+                var pEvent = (IMediaEvent) Graph;
 
                 do
                 {
@@ -598,7 +645,7 @@ namespace Splicer.Renderer
                     }
                 } while (_state < RendererState.GraphCompleting);
 
-                // If the user cancelled
+                // If the user canceled
                 if (_state == RendererState.Cancelling)
                 {
                     // Stop the graph, send an appropriate exit code
@@ -615,13 +662,13 @@ namespace Splicer.Renderer
                 }
                 else
                 {
-                    ChangeState(RendererState.Cancelled);
+                    ChangeState(RendererState.Canceled);
                     OnRenderCompleted();
                     if (_renderResult != null) _renderResult.Complete(true);
                     if (_cancelResult != null) _cancelResult.Complete(false);
                 }
             }
-            catch (Exception ex)
+            catch (COMException ex)
             {
                 if (_renderResult != null) _renderResult.Complete(ex);
                 if (_cancelResult != null) _cancelResult.Complete(ex);
@@ -645,6 +692,12 @@ namespace Splicer.Renderer
                     _state = newState;
                 }
             }
+        }
+
+        protected void DisableClock()
+        {
+            int hr = ((IMediaFilter) Graph).SetSyncSource(null);
+            DsError.ThrowExceptionForHR(hr);
         }
     }
 }

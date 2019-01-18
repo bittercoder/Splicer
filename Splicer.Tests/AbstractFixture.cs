@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
 
 using System;
 using System.Xml;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Splicer.Renderer;
 using Splicer.Timeline;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer
 {
@@ -25,11 +26,11 @@ namespace Splicer
     {
         protected void AssertXml(string expected, string actual)
         {
-            XmlDocument expectedDoc = new XmlDocument();
+            var expectedDoc = new XmlDocument();
             expectedDoc.LoadXml(expected);
             expected = expectedDoc.OuterXml;
 
-            XmlDocument actualDoc = new XmlDocument();
+            var actualDoc = new XmlDocument();
             actualDoc.LoadXml(actual);
             actual = actualDoc.OuterXml;
 
@@ -38,15 +39,15 @@ namespace Splicer
 
         protected void AssertLengths(ITimeline timeline, double expected, string file)
         {
-            AssertLengths(timeline.FPS, expected, file);
+            AssertLengths(timeline.Fps, expected, file);
         }
 
         protected void AssertLengths(double fps, double expected, string file)
         {
-            long length1 = TimelineUtils.ToUnits(expected);
-            long length2 = MediaDetUtils.GetLength(file);
+            long length1 = TimelineBuilder.ToUnits(expected);
+            long length2 = MediaInspector.GetLength(file);
 
-            long frameLength = TimelineUtils.ToUnits(1.0/fps)*4; // allow for 4 frames difference
+            long frameLength = TimelineBuilder.ToUnits(1.0/fps)*4; // allow for 4 frames difference
 
             long difference = Math.Abs(length1 - length2);
             Assert.IsTrue(difference <= frameLength,
@@ -55,15 +56,15 @@ namespace Splicer
 
         protected void AssertLengths(ITimeline timeline, string file1, string file2)
         {
-            AssertLengths(timeline.FPS, file1, file2);
+            AssertLengths(timeline.Fps, file1, file2);
         }
 
         protected void AssertLengths(double fps, string file1, string file2)
         {
-            long length1 = MediaDetUtils.GetLength(file1);
-            long length2 = MediaDetUtils.GetLength(file2);
+            long length1 = MediaInspector.GetLength(file1);
+            long length2 = MediaInspector.GetLength(file2);
 
-            long frameLength = TimelineUtils.ToUnits(1.0/fps);
+            long frameLength = TimelineBuilder.ToUnits(1.0/fps);
 
             long difference = Math.Abs(length1 - length2);
             Assert.IsTrue(difference <= frameLength);
@@ -71,7 +72,7 @@ namespace Splicer
 
         protected void PrepareToExecute(ITimeline timeline, string expectedXml)
         {
-            using (NullRenderer renderer = new NullRenderer(timeline))
+            using (var renderer = new NullRenderer(timeline))
             {
                 PrepareToExecute(renderer, expectedXml);
             }

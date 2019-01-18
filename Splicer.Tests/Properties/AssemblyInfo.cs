@@ -13,6 +13,22 @@
 // limitations under the License.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-[assembly : AssemblyTitle("Splicer.Tests")]
-[assembly : AssemblyDescription("Test fixtures for the Splicer core library")]
+[assembly: AssemblyTitle("Splicer.UnitTest")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Splicer.UnitTest")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+[assembly: ComVisible(false)]
+
+[assembly: Guid("06782e92-4b75-4957-9199-91d24082aeb8")]
+
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

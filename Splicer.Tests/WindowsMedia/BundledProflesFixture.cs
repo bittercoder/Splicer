@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.WindowsMedia.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class BundledProflesFixture
     {
-        [Test]
+        [TestMethod]
         public void CanReadAll()
         {
             Assert.IsFalse(string.IsNullOrEmpty(WindowsMediaProfiles.HighQualityVideo));

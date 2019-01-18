@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class TimelineUtilsFixture
     {
-        [Test]
+        [TestMethod]
         public void ToSeconds()
         {
-            Assert.AreEqual(1, TimelineUtils.ToSeconds(10000000));
-            Assert.AreEqual(-1, TimelineUtils.ToSeconds(-1));
+            Assert.AreEqual(1, TimelineBuilder.ToSeconds(10000000));
+            Assert.AreEqual(-1, TimelineBuilder.ToSeconds(-1));
         }
 
-        [Test]
+        [TestMethod]
         public void ToUnits()
         {
-            Assert.AreEqual(10000000, TimelineUtils.ToUnits(1));
-            Assert.AreEqual(-1, TimelineUtils.ToUnits(-1));
+            Assert.AreEqual(10000000, TimelineBuilder.ToUnits(1));
+            Assert.AreEqual(-1, TimelineBuilder.ToUnits(-1));
         }
     }
 }

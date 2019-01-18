@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,37 +14,38 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib.DES;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Timeline
 {
-    public class Clip : IClip
+    public sealed class Clip : IClip
     {
-        private event EventHandler<AfterEffectAddedEventArgs> _afterEffectAdded;
-        private event EventHandler _beforeEffectAdded;
-        private double _offset;
-        private double _duration;
+        private readonly IClipContainer _container;
+        private readonly double _duration;
+        private readonly double _mediaStart;
+        private readonly string _name;
+        private readonly double _offset;
+        private readonly IAMTimeline _timeline;
+        private AddOnlyCollection<IEffect> _effects = new AddOnlyCollection<IEffect>();
         private MediaFile _file;
-        private AddOnlyList<IEffect> _effects = new AddOnlyList<IEffect>();
-        private IAMTimeline _timeline;
-        private IAMTimelineSrc _timelineSrc;
-        private string _name;
-        private double _mediaStart;
-        private IClipContainer _container;
+        private IAMTimelineSrc _timelineSource;
 
-        public Clip(IClipContainer container, IAMTimeline timeline, IAMTimelineSrc timelineSrc, string name,
+        public Clip(IClipContainer container, IAMTimeline timeline, IAMTimelineSrc timelineSource, string name,
                     double offset, double duration, double mediaStart, MediaFile file)
         {
             _container = container;
             _name = name;
             _timeline = timeline;
-            _timelineSrc = timelineSrc;
+            _timelineSource = timelineSource;
             _offset = offset;
             _duration = duration;
             _file = file;
             _mediaStart = mediaStart;
         }
+
+        #region IClip Members
 
         public IGroup Group
         {
@@ -61,10 +62,10 @@ namespace Splicer.Timeline
             get
             {
                 ResizeFlags mode;
-                _timelineSrc.GetStretchMode(out mode);
+                _timelineSource.GetStretchMode(out mode);
                 return mode;
             }
-            set { _timelineSrc.SetStretchMode(value); }
+            set { _timelineSource.SetStretchMode(value); }
         }
 
         public string Name
@@ -92,7 +93,7 @@ namespace Splicer.Timeline
             get { return _file; }
         }
 
-        public AddOnlyList<IEffect> Effects
+        public AddOnlyCollection<IEffect> Effects
         {
             get { return _effects; }
         }
@@ -106,39 +107,51 @@ namespace Splicer.Timeline
         public IEffect AddEffect(string name, int priority, double offset, double duration,
                                  EffectDefinition effectDefinition)
         {
-            OnBeforeEffectsAdded();
+            OnAddingEffects();
 
             IEffect effect =
-                TimelineUtils.AddEffectToCollection(this, _timeline, (IAMTimelineEffectable) _timelineSrc, _effects,
-                                                    name,
-                                                    priority, offset, duration, effectDefinition);
+                TimelineBuilder.AddEffectToCollection(this, _timeline, (IAMTimelineEffectable) _timelineSource, _effects,
+                                                      name,
+                                                      priority, offset, duration, effectDefinition);
 
-            OnAfterEffectAdded(effect);
+            OnAddedEffect(effect);
 
             return effect;
         }
 
-        public event EventHandler<AfterEffectAddedEventArgs> AfterEffectAdded
+        public event EventHandler<AddedEffectEventArgs> AddedEffect
         {
             add { _afterEffectAdded += value; }
             remove { _afterEffectAdded -= value; }
         }
 
-        public event EventHandler BeforeEffectAdded
+        public event EventHandler AddingEffect
         {
             add { _beforeEffectAdded += value; }
             remove { _beforeEffectAdded -= value; }
         }
 
-        protected void OnAfterEffectAdded(IEffect effect)
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        private event EventHandler<AddedEffectEventArgs> _afterEffectAdded;
+        private event EventHandler _beforeEffectAdded;
+
+        private void OnAddedEffect(IEffect effect)
         {
             if (_afterEffectAdded != null)
             {
-                _afterEffectAdded(this, new AfterEffectAddedEventArgs(effect, this));
+                _afterEffectAdded(this, new AddedEffectEventArgs(effect, this));
             }
         }
 
-        protected void OnBeforeEffectsAdded()
+        private void OnAddingEffects()
         {
             if (_beforeEffectAdded != null)
             {
@@ -146,26 +159,38 @@ namespace Splicer.Timeline
             }
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~Clip()
         {
-            if (_timelineSrc != null)
-            {
-                Marshal.ReleaseComObject(_timelineSrc);
-                _timelineSrc = null;
-            }
-
-            if (_effects != null)
-            {
-                foreach (IEffect effect in _effects)
-                {
-                    effect.Dispose();
-                }
-                _effects = null;
-            }
+            Dispose(false);
         }
 
-        #endregion      
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_effects != null)
+                {
+                    foreach (IEffect effect in _effects)
+                    {
+                        effect.Dispose();
+                    }
+                    _effects = null;
+                }
+
+                if (_file != null)
+                {
+                    _file.Dispose();
+                    _file = null;
+                }
+            }
+
+            if (_timelineSource != null)
+            {
+                Marshal.ReleaseComObject(_timelineSource);
+                _timelineSource = null;
+            }
+        }
     }
 }

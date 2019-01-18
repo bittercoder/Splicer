@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib.DES;
 
 namespace Splicer.Timeline
 {
-    public class Effect : IEffect, IPrioritySetter
+    public sealed class Effect : IEffect, IPrioritySetter
     {
+        private readonly IEffectContainer _container;
+        private readonly double _duration;
+        private readonly EffectDefinition _effectDefinition;
+        private readonly string _name;
+        private readonly double _offset;
         private int _priority;
-        private double _offset;
-        private double _duration;
-        private string _name;
-        private EffectDefinition _effectDefinition;
         private IAMTimelineObj _timelineObj;
-        private IEffectContainer _container;
 
         public Effect(IEffectContainer container, IAMTimelineObj timelineObj, string name, int priority, double offset,
                       double duration,
@@ -77,17 +79,11 @@ namespace Splicer.Timeline
             get { return _effectDefinition; }
         }
 
-        #endregion
-
-        #region IDisposable Members
-
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public void Dispose()
         {
-            if (_timelineObj != null)
-            {
-                Marshal.ReleaseComObject(_timelineObj);
-                _timelineObj = null;
-            }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -100,5 +96,21 @@ namespace Splicer.Timeline
         }
 
         #endregion
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~Effect()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        private void Dispose(bool disposing)
+        {
+            if (_timelineObj != null)
+            {
+                Marshal.ReleaseComObject(_timelineObj);
+                _timelineObj = null;
+            }
+        }
     }
 }

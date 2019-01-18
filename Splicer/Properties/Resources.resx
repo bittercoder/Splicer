@@ -1,0 +1,259 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AudioInputPinNamePrefix" xml:space="preserve">
+    <value>Audio Input</value>
+  </data>
+  <data name="DefaultAsfWriterName" xml:space="preserve">
+    <value>ASF Writer</value>
+  </data>
+  <data name="DefaultFileDestinationName" xml:space="preserve">
+    <value>Output File</value>
+  </data>
+  <data name="DefaultNullRendererName" xml:space="preserve">
+    <value>Null Renderer</value>
+  </data>
+  <data name="DefaultVideoRenderingWindowCaption" xml:space="preserve">
+    <value>Video Rendering Window</value>
+  </data>
+  <data name="DefaultWavDestinationName" xml:space="preserve">
+    <value>Wav DEST</value>
+  </data>
+  <data name="ErrorAsyncResultNotIssuesByThisInstance" xml:space="preserve">
+    <value>The supplied async result was not issued by this instance</value>
+  </data>
+  <data name="ErrorAttemptToCancelWhenCancelingOrCompleting" xml:space="preserve">
+    <value>You can not cancel this renderer, it is already completing/canceling</value>
+  </data>
+  <data name="ErrorAttemptToCancelWhenCancelInProgress" xml:space="preserve">
+    <value>You can not cancel, a request to cancel has already been issued - have you remembered to call EndCancel?</value>
+  </data>
+  <data name="ErrorCanNotRenderAviWhenNoVideoGroupExists" xml:space="preserve">
+    <value>Can not render to AVI when no video group exists</value>
+  </data>
+  <data name="ErrorCanNotResolveMediaTypeForEncoder" xml:space="preserve">
+    <value>Can not resolve media type for encoder ({0} khz, {1} kbps, mono? {2}) - list of available formats follow:</value>
+  </data>
+  <data name="ErrorCanResolveAudioEncoder" xml:space="preserve">
+    <value>Can not resolve audio encoder "{0}"</value>
+  </data>
+  <data name="ErrorCantAddAudioClipsToVideoGroup" xml:space="preserve">
+    <value>You can not add audio clips to a track which exists within a non-audio group</value>
+  </data>
+  <data name="ErrorCantAddVideoClipsToAudioGroup" xml:space="preserve">
+    <value>You can not add video or image clips to a track which exists within a non-video group</value>
+  </data>
+  <data name="ErrorEndCancelAlreadyCalledForAsyncResult" xml:space="preserve">
+    <value>EndCancel has already been called fo this async result</value>
+  </data>
+  <data name="ErrorEndRenderAlreadyCalledForAsyncResult" xml:space="preserve">
+    <value>EndRender has already been called for this async result</value>
+  </data>
+  <data name="ErrorExceptionOccuredDuringCancelRenderRequest" xml:space="preserve">
+    <value>Exception occurred while attempting to cancel render request, see inner exception for details</value>
+  </data>
+  <data name="ErrorExceptionOccuredDuringRenderRequest" xml:space="preserve">
+    <value>Exception occurred while attempting to render, see inner exception for details</value>
+  </data>
+  <data name="ErrorFramesPerSecondMustBeGreaterThenZero" xml:space="preserve">
+    <value>Frames per second must be greater then 0</value>
+  </data>
+  <data name="ErrorGraphNotYetStarted" xml:space="preserve">
+    <value>Graph not yet started</value>
+  </data>
+  <data name="ErrorGroupsDontSupportContainerProperty" xml:space="preserve">
+    <value>Groups are top level timeline components and do not support this property</value>
+  </data>
+  <data name="ErrorInvalidLengthSpecified" xml:space="preserve">
+    <value>Invalid length specified</value>
+  </data>
+  <data name="ErrorInvalidOutputFileName" xml:space="preserve">
+    <value>Output file name is null or invalid</value>
+  </data>
+  <data name="ErrorMustCallBeginCancelBeforeEndCancel" xml:space="preserve">
+    <value>You must call BeginCancel before EndCancel</value>
+  </data>
+  <data name="ErrorMustCallBeginRenderBeforeEndRender" xml:space="preserve">
+    <value>You must call BeginRender before EndRender</value>
+  </data>
+  <data name="ErrorNoAudioStreamToRender" xml:space="preserve">
+    <value>No audio group to render</value>
+  </data>
+  <data name="ErrorNoGroupForSupportingClipOfType" xml:space="preserve">
+    <value>No group found supporting a clip of type "{0}"</value>
+  </data>
+  <data name="ErrorNoTracksFoundInFirstGroupOfType" xml:space="preserve">
+    <value>No tracks found in the first group of type "{0}"</value>
+  </data>
+  <data name="ErrorPinsEnumeratorIsNull" xml:space="preserve">
+    <value>pins enumerator is null</value>
+  </data>
+  <data name="ErrorPreviousRenderRequestInProgress" xml:space="preserve">
+    <value>A previous render request has not yet been completed - have you remembered to call EndRender?</value>
+  </data>
+  <data name="ErrorRenderRequestCanceledByUser" xml:space="preserve">
+    <value>The render request was canceled by the user</value>
+  </data>
+  <data name="ErrorUnrecognizedBitFormat" xml:space="preserve">
+    <value>Unrecognized bit format</value>
+  </data>
+  <data name="ErrorWMProfileRequiresAudioGroup" xml:space="preserve">
+    <value>The selected windows media profile encodes audio information, yet no audio group exists</value>
+  </data>
+  <data name="ErrorWMProfileRequiresVideoGroup" xml:space="preserve">
+    <value>The selected windows media profile encodes video information, yet no video group exists</value>
+  </data>
+  <data name="ImagesToDiskParticipantFilenameTemplate" xml:space="preserve">
+    <value>frame{0}.jpg</value>
+  </data>
+  <data name="MediaEventThreadName" xml:space="preserve">
+    <value>Media Event Thread</value>
+  </data>
+  <data name="Mono" xml:space="preserve">
+    <value>Mono</value>
+  </data>
+  <data name="PinQueryInfoTemplate" xml:space="preserve">
+    <value>Direction: {0}, Name: {1}, QueryId: {2}</value>
+  </data>
+  <data name="Stereo" xml:space="preserve">
+    <value>Stereo</value>
+  </data>
+  <data name="TemporaryAudioFilenameTemplate" xml:space="preserve">
+    <value>splicerTempAudio{0}{1}</value>
+    <comment>argument 0 is random text, argument 1 is file extension including period</comment>
+  </data>
+  <data name="TemporaryImageFilenameTemplate" xml:space="preserve">
+    <value>splicerTempImage{0}.bmp</value>
+  </data>
+  <data name="UnsupportedAMMEdiaType" xml:space="preserve">
+    <value>Unsupported AMMEdiaType encountered</value>
+  </data>
+  <data name="VideoInputPinNamePrefix" xml:space="preserve">
+    <value>Video Input</value>
+  </data>
+  <data name="VirtualClipToStringTemplate" xml:space="preserve">
+    <value>&lt;clip start="{0}" stop="{1}" src="{2}" mstart="{3}" /&gt;</value>
+  </data>
+  <data name="WavFormatInfoTemplate" xml:space="preserve">
+    <value>{0} - {1} kHz - {2} kbps</value>
+  </data>
+  <data name="WatermarkTimeStamp" xml:space="preserve">
+    <value>{0:0.000}s</value>
+  </data>
+</root>

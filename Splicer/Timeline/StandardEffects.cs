@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,52 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Globalization;
-using Splicer.Utils;
 
 namespace Splicer.Timeline
 {
     public static class StandardEffects
     {
+        /// <summary>
+        /// Alpha setter effect, also known as the AlphaSetterEffect
+        /// </summary>
+        public static readonly Guid AlphaSetterEffect = new Guid("506D89AE-909A-44f7-9444-ABD575896E35");
+
+        /// <summary>
+        /// Audio Mixer effect
+        /// </summary>
+        public static readonly Guid AudioMixerEffect = new Guid("036A9790-C153-11d2-9EF7-006008039E37");
+
+        /// <summary>
+        /// Blur effect
+        /// </summary>
+        public static readonly Guid BlurEffect = new Guid("7312498D-E87A-11D1-81E0-0000F87557DB");
+
+        /// <summary>
+        /// DX Matrix effect
+        /// </summary>
+        public static readonly Guid MatrixEffect = new Guid("4ABF5A06-5568-4834-BEE3-327A6D95A685");
+
+        /// <summary>
+        /// The mirror and gray scale effect
+        /// </summary>
+        public static readonly Guid MirrorAndGrayscaleEffect = new Guid("16B280C8-EE70-11D1-9066-00C04FD9189D");
+
+        /// <summary>
+        /// Performs a pixelate effect
+        /// </summary>
+        public static readonly Guid PixelateEffect = new Guid("4CCEA634-FBE0-11D1-906A-00C04FD9189D");
+
         public static EffectDefinition CreateDefaultBlur()
         {
-            EffectDefinition blurEffectDefinition = new EffectDefinition(DxtSubObjects.sIEBlurGuid);
+            var blurEffectDefinition = new EffectDefinition(BlurEffect);
             return blurEffectDefinition;
         }
 
         public static EffectDefinition CreateBlurEffect(double startRadius, double duration, double endRadius)
         {
-            EffectDefinition blurEffectDefinition = new EffectDefinition(DxtSubObjects.sIEBlurGuid);
+            var blurEffectDefinition = new EffectDefinition(BlurEffect);
             blurEffectDefinition.Parameters.Add(
                 new Parameter(EffectParameters.BlurPixelRadius, startRadius, duration, endRadius));
 
@@ -36,7 +66,7 @@ namespace Splicer.Timeline
 
         public static EffectDefinition CreateAlphaSetter(byte newAlpha)
         {
-            EffectDefinition alphaSetterDefinition = new EffectDefinition(DxtSubObjects.DxtAlphaSetter);
+            var alphaSetterDefinition = new EffectDefinition(AlphaSetterEffect);
             alphaSetterDefinition.Parameters.Add(new Parameter("Alpha", newAlpha));
 
             return alphaSetterDefinition;
@@ -49,20 +79,20 @@ namespace Splicer.Timeline
                 throw new SplicerException("The alpha ramp value must be a percentage between 0 and 1");
             }
 
-            EffectDefinition alphaSetterDefinition = new EffectDefinition(DxtSubObjects.DxtAlphaSetter);
+            var alphaSetterDefinition = new EffectDefinition(AlphaSetterEffect);
             alphaSetterDefinition.Parameters.Add(new Parameter("AlphaRamp", alphaRamp));
 
             return alphaSetterDefinition;
         }
 
-        public static EffectDefinition CreateAudioEnvelope(double volumePercent, double duration)
+        public static EffectDefinition CreateAudioEnvelope(double volumePercent)
         {
             if ((volumePercent < 0) || (volumePercent > 1))
             {
                 throw new SplicerException("Volume percentage must be between 0 and 1");
             }
 
-            EffectDefinition definition = new EffectDefinition(DxtSubObjects.AudioMixer);
+            var definition = new EffectDefinition(AudioMixerEffect);
             definition.Parameters.Add(new Parameter("Vol", volumePercent));
 
             return definition;
@@ -85,9 +115,9 @@ namespace Splicer.Timeline
 
             string volumeValue = volumePercent.ToString(CultureInfo.InvariantCulture);
 
-            EffectDefinition definition = new EffectDefinition(DxtSubObjects.AudioMixer);
+            var definition = new EffectDefinition(AudioMixerEffect);
 
-            Parameter volumeParameter = new Parameter();
+            var volumeParameter = new Parameter();
             volumeParameter.Name = "Vol";
 
             if (fadeInDuration > 0)

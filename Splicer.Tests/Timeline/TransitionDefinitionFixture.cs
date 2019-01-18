@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,41 +13,36 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using NUnit.Framework;
-using Splicer.Utils;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class TransitionDefinitionFixture
     {
-        [Test]
+        [TestMethod]
         public void Construct1()
         {
-            TransitionDefinition definition = new TransitionDefinition();
+            var definition = new TransitionDefinition();
             Assert.AreEqual(Guid.Empty, definition.TransitionId);
             Assert.AreEqual(0, definition.Parameters.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct2()
         {
-            TransitionDefinition definition = new TransitionDefinition(DxtSubObjects.FadeTransition);
-            Assert.AreEqual(DxtSubObjects.FadeTransition, definition.TransitionId);
+            var definition = new TransitionDefinition(StandardTransitions.FadeTransition);
+            Assert.AreEqual(StandardTransitions.FadeTransition, definition.TransitionId);
             Assert.AreEqual(0, definition.Parameters.Count);
         }
 
-        [Test]
+        [TestMethod]
         public void SetValues()
         {
-            TransitionDefinition definition = new TransitionDefinition();
-            List<Parameter> newParams = new List<Parameter>();
-            definition.Parameters = newParams;
-            Assert.AreSame(newParams, definition.Parameters);
-
-            definition.TransitionId = DxtSubObjects.FadeTransition;
-            Assert.AreEqual(DxtSubObjects.FadeTransition, definition.TransitionId);
+            var definition = new TransitionDefinition();
+            definition.TransitionId = StandardTransitions.FadeTransition;
+            Assert.AreEqual(StandardTransitions.FadeTransition, definition.TransitionId);
         }
     }
 }

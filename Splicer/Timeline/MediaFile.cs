@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Splicer.Utils;
+using System;
+using System.IO;
+using System.Security.Permissions;
+using Splicer.Properties;
+using Splicer.Utilities;
 
 namespace Splicer.Timeline
 {
     /// <summary>
     /// Media file represents the file used to create a clip.
     /// </summary>
-    public class MediaFile
+    public sealed class MediaFile : IDisposable
     {
         #region Data members
 
         /// <summary>
-        /// file this instance is reporting information for
+        /// When true, this media file will attempt to destroy the file when it's disposed
         /// </summary>
-        private string _filename;
+        private readonly bool _manageLifespan;
 
         /// <summary>
-        /// Duration of the media in UNITS, as reported by IMediaDet
+        /// Duration of the media in Units, as reported by IMediaDet
         /// </summary>
-        private long _realLengthInUnits;
+        private readonly long _realLengthInUnits;
+
+        /// <summary>
+        /// file this instance is reporting information for
+        /// </summary>
+        private string _fileName;
 
         /// <summary>
         /// Amount of the real length to use when rendering
@@ -41,20 +50,27 @@ namespace Splicer.Timeline
         // <summary>
         // UsingLength reported in # of frames (only available after the file has been added to the timeline) 
         // </summary>
-        private int _lengthInFrames;
 
         #endregion
+
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public MediaFile(string fileName, bool manageLifespan)
+        {
+            _manageLifespan = manageLifespan;
+            _fileName = fileName;
+            _realLengthInUnits = MediaInspector.GetLength(fileName);
+            _lengthUsedInUnits = _realLengthInUnits;
+            LengthInFrames = -1;
+        }
 
         /// <summary>
         /// Constructor takes a file path+name
         /// </summary>
-        /// <param name="filename">File path+name</param>
-        public MediaFile(string filename)
+        /// <param name="fileName">File path+name</param>
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public MediaFile(string fileName)
+            : this(fileName, false)
         {
-            _filename = filename;
-            _realLengthInUnits = MediaDetUtils.GetLength(filename);
-            _lengthUsedInUnits = _realLengthInUnits;
-            _lengthInFrames = -1;
         }
 
         /// <summary>
@@ -74,7 +90,7 @@ namespace Splicer.Timeline
                 }
                 else
                 {
-                    throw new SplicerException("Invalid length specified");
+                    throw new SplicerException(Resources.ErrorInvalidLengthSpecified);
                 }
             }
         }
@@ -84,7 +100,7 @@ namespace Splicer.Timeline
         /// </summary>
         public double Length
         {
-            get { return TimelineUtils.ToSeconds(LengthInUnits); }
+            get { return TimelineBuilder.ToSeconds(LengthInUnits); }
         }
 
         /// <summary>
@@ -92,16 +108,40 @@ namespace Splicer.Timeline
         /// </summary>
         public string FileName
         {
-            get { return _filename; }
+            get { return _fileName; }
         }
 
         /// <summary>
         /// Return the length in frames
         /// </summary>
-        public int LengthInFrames
+        public int LengthInFrames { set; get; }
+
+        #region IDisposable Members
+
+        public void Dispose()
         {
-            set { _lengthInFrames = value; }
-            get { return _lengthInFrames; }
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        ~MediaFile()
+        {
+            Dispose(false);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_manageLifespan)
+            {
+                File.Delete(_fileName);
+            }
+
+            if (disposing)
+            {
+                _fileName = null;
+            }
         }
     }
 }

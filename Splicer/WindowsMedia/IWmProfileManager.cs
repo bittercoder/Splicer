@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,23 +17,18 @@ using System.Runtime.InteropServices;
 
 namespace Splicer.WindowsMedia
 {
-    public static class ProfileManager
+    internal static class ProfileManager
     {
-        public static IWMProfileManager CreateInstance()
+        internal static IWMProfileManager CreateInstance()
         {
-            return WMCreateProfileManager();
+            return NativeMethods.WMCreateProfileManager();
         }
-
-        [
-            DllImport("WMVCore.dll", EntryPoint="WMCreateProfileManager", PreserveSig=false, SetLastError=true,
-                ExactSpelling=true)]
-        private static extern IWMProfileManager WMCreateProfileManager();
     }
 
     [ComImport]
     [Guid("D16679F2-6CA0-472D-8D31-2F5D55AEE155")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IWMProfileManager
+    internal interface IWMProfileManager
     {
         IntPtr CreateEmptyProfile([In] uint dwVersion);
         IntPtr LoadProfileByID([In, Out] ref Guid guidProfile);

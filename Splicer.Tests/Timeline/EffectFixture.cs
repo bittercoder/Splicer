@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class EffectFixture
     {
-        [Test]
+        [TestMethod]
         public void AddEffectSetsApropriateContainer()
         {
             using (ITimeline timeline = new DefaultTimeline())
@@ -41,7 +42,7 @@ namespace Splicer.Timeline.Tests
                 Assert.AreSame(group, compositionEffect.Group);
                 Assert.AreSame(composition, compositionEffect.Container);
 
-                IClip clip = track.AddClip("image1.jpg", GroupMediaType.Image, InsertPosition.Absoloute, 0, 0, 10);
+                IClip clip = track.AddClip("..\\..\\image1.jpg", GroupMediaType.Image, InsertPosition.Absolute, 0, 0, 10);
                 IEffect clipEffect = clip.AddEffect(0, 10, def);
                 Assert.AreSame(group, clip.Group);
                 Assert.AreSame(clip, clipEffect.Container);

@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,26 +14,41 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 using Splicer.Timeline;
-using Splicer.Utils;
+using Splicer.Utilities;
 
 namespace Splicer.Renderer
 {
-    public class WindowRenderer : AbstractRenderer
+    public class WindowRenderer : AbstractRenderer, IDisposable
     {
-        public WindowRenderer(ITimeline timeline, IntPtr hWnd, IDESCombineCB pVideoCallback,
-                              IDESCombineCB pAudioCallback)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public WindowRenderer(ITimeline timeline, IntPtr windowHandle, ICallbackParticipant[] videoParticipants,
+                              ICallbackParticipant[] audioParticipants)
             : base(timeline)
         {
-            RenderToWindow(hWnd, pVideoCallback, pAudioCallback);
+            RenderToWindow(windowHandle, videoParticipants, audioParticipants);
         }
 
-        public WindowRenderer(ITimeline timeline, IntPtr hWnd)
-            : this(timeline, hWnd, null, null)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public WindowRenderer(ITimeline timeline, IntPtr windowHandle)
+            : this(timeline, windowHandle, null, null)
         {
         }
+
+        #region IDisposable Members
+
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
 
         /// <summary>
         /// Configure the graph to output the results to a video window.
@@ -42,23 +57,24 @@ namespace Splicer.Renderer
         /// The callback routines are invoked once for each sample.  This allows for additional processing to
         /// be performed on the video or audio buffers.
         /// </remarks>
-        /// <param name="hWnd">Window handle to render to, or IntPtr.Zero to render to its own window</param>
-        /// <param name="pVideoCallback">Callback routine to be called for each video frame or null for no callback</param>
-        /// <param name="pAudioCallback">Callback routine to be called for each audio frame or null for no callback</param>
-        private void RenderToWindow(IntPtr hWnd, IDESCombineCB pVideoCallback, IDESCombineCB pAudioCallback)
+        /// <param name="windowHandle">Window handle to render to, or IntPtr.Zero to render to its own window</param>
+        /// <param name="videoParticipants">Callback routine to be called for each video frame or null for no callback</param>
+        /// <param name="audioParticipants">Callback routine to be called for each audio frame or null for no callback</param>
+        private void RenderToWindow(IntPtr windowHandle, ICallbackParticipant[] videoParticipants,
+                                    ICallbackParticipant[] audioParticipants)
         {
             int hr;
-            IPin pPin;
-            IVideoWindow pVidWindow;
-            IAMTimelineObj pGroup;
-            IAMTimeline desTimeline = _timeline.DesTimeline;
+            IPin pin;
+            IVideoWindow videoWindow;
+            IAMTimelineObj group;
+            IAMTimeline desTimeline = Timeline.DesTimeline;
 
             // Contains useful routines for creating the graph
-            ICaptureGraphBuilder2 icgb = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
+            var graphBuilder = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
 
             try
             {
-                hr = icgb.SetFiltergraph(_graph);
+                hr = graphBuilder.SetFiltergraph(Graph);
                 DESError.ThrowExceptionForHR(hr);
 
                 int NumGroups;
@@ -69,41 +85,40 @@ namespace Splicer.Renderer
                 // contains all the video, and a second group for the audio.
                 for (int i = 0; i < NumGroups; i++)
                 {
-                    hr = desTimeline.GetGroup(out pGroup, i);
+                    hr = desTimeline.GetGroup(out group, i);
                     DESError.ThrowExceptionForHR(hr);
 
                     try
                     {
                         // Inform the graph we will be previewing (rather than writing to disk)
-                        IAMTimelineGroup pTLGroup = (IAMTimelineGroup) pGroup;
+                        var pTLGroup = (IAMTimelineGroup) group;
                         hr = pTLGroup.SetPreviewMode(true);
                         DESError.ThrowExceptionForHR(hr);
                     }
                     finally
                     {
                         // Release the group
-                        Marshal.ReleaseComObject(pGroup);
+                        Marshal.ReleaseComObject(group);
                     }
 
                     // Get the IPin for the current group
-                    hr = _renderEngine.GetGroupOutputPin(i, out pPin);
+                    hr = RenderEngine.GetGroupOutputPin(i, out pin);
                     DESError.ThrowExceptionForHR(hr);
 
                     try
                     {
                         // If this is the video pin
-                        if (PinUtils.IsVideo(pPin))
+                        if (FilterGraphTools.IsVideo(pin))
                         {
                             // Get a video renderer
-                            IBaseFilter ibfVideoRenderer = (IBaseFilter) new VideoRenderer();
+                            var ibfVideoRenderer = (IBaseFilter) new VideoRenderer();
 
                             try
                             {
                                 // Create a sample grabber, add it to the graph and connect it all up
-                                CallbackHandler mcb =
-                                    new CallbackHandler(_firstVideoGroup, pVideoCallback, (IMediaEventSink) _graph,
-                                                        EC_VideoFileComplete);
-                                RenderWindowHelper(icgb, mcb, "Video", pPin, ibfVideoRenderer);
+                                var mcb =
+                                    new CallbackHandler(videoParticipants);
+                                RenderWindowHelper(graphBuilder, mcb, "Video", pin, ibfVideoRenderer);
                             }
                             finally
                             {
@@ -113,15 +128,14 @@ namespace Splicer.Renderer
                         else
                         {
                             // Get an audio renderer
-                            IBaseFilter ibfAudioRenderer = (IBaseFilter) new AudioRender();
+                            var ibfAudioRenderer = (IBaseFilter) new AudioRender();
 
                             try
                             {
                                 // Create a sample grabber, add it to the graph and connect it all up
-                                CallbackHandler mcb =
-                                    new CallbackHandler(_firstAudioGroup, pAudioCallback, (IMediaEventSink) _graph,
-                                                        EC_AudioFileComplete);
-                                RenderWindowHelper(icgb, mcb, "Audio", pPin, ibfAudioRenderer);
+                                var mcb =
+                                    new CallbackHandler(audioParticipants);
+                                RenderWindowHelper(graphBuilder, mcb, "Audio", pin, ibfAudioRenderer);
                             }
                             finally
                             {
@@ -131,41 +145,53 @@ namespace Splicer.Renderer
                     }
                     finally
                     {
-                        Marshal.ReleaseComObject(pPin);
+                        Marshal.ReleaseComObject(pin);
                     }
                 }
 
                 // Configure the video window
-                pVidWindow = (IVideoWindow) _graph;
+                videoWindow = (IVideoWindow) Graph;
 
                 // If a window handle was supplied, use it
-                if (hWnd != IntPtr.Zero)
+                if (windowHandle != IntPtr.Zero)
                 {
-                    hr = pVidWindow.put_Owner(hWnd);
+                    hr = videoWindow.put_Owner(windowHandle);
                     DESError.ThrowExceptionForHR(hr);
                 }
                 else
                 {
                     // Use our own window
 
-                    hr = pVidWindow.put_Caption("Video Rendering Window");
+                    hr = videoWindow.put_Caption(Resources.DefaultVideoRenderingWindowCaption);
                     DESError.ThrowExceptionForHR(hr);
 
                     // since no user interaction is allowed, remove
                     // system menu and maximize/minimize buttons
                     WindowStyle lStyle = 0;
-                    hr = pVidWindow.get_WindowStyle(out lStyle);
+                    hr = videoWindow.get_WindowStyle(out lStyle);
                     DESError.ThrowExceptionForHR(hr);
 
                     lStyle &= ~(WindowStyle.MinimizeBox | WindowStyle.MaximizeBox | WindowStyle.SysMenu);
-                    hr = pVidWindow.put_WindowStyle(lStyle);
+                    hr = videoWindow.put_WindowStyle(lStyle);
                     DESError.ThrowExceptionForHR(hr);
                 }
             }
             finally
             {
-                Marshal.ReleaseComObject(icgb);
+                Marshal.ReleaseComObject(graphBuilder);
             }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~WindowRenderer()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeRenderer(disposing);
         }
     }
 }

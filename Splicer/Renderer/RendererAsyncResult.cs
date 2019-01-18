@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ namespace Splicer.Renderer
 {
     public class RendererAsyncResult : IAsyncResult, IDisposable
     {
-        private AsyncCallback _callback;
-        private object _asyncState;
-        private ManualResetEvent _waitHandle;
-        private Exception _exception;
-        private bool _cancelled;
+        private readonly object _asyncState;
+        private readonly AsyncCallback _callback;
+        private bool _canceled;
         private bool _consumed;
+        private Exception _exception;
+        private ManualResetEvent _waitHandle;
 
         public RendererAsyncResult(AsyncCallback callback, object state)
         {
@@ -32,6 +32,23 @@ namespace Splicer.Renderer
             _asyncState = state;
             _waitHandle = new ManualResetEvent(false);
         }
+
+        public Exception Exception
+        {
+            get { return _exception; }
+        }
+
+        public bool Canceled
+        {
+            get { return _canceled; }
+        }
+
+        public bool Consumed
+        {
+            get { return _consumed; }
+        }
+
+        #region IAsyncResult Members
 
         public object AsyncState
         {
@@ -53,20 +70,17 @@ namespace Splicer.Renderer
             get { return _waitHandle.WaitOne(0, false); }
         }
 
-        public Exception Exception
+        #endregion
+
+        #region IDisposable Members
+
+        public void Dispose()
         {
-            get { return _exception; }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public bool Cancelled
-        {
-            get { return _cancelled; }
-        }
-
-        public bool Consumed
-        {
-            get { return _consumed; }
-        }
+        #endregion
 
         public void Consume()
         {
@@ -79,20 +93,25 @@ namespace Splicer.Renderer
             Complete(false);
         }
 
-        public void Complete(bool cancelled)
+        public void Complete(bool canceled)
         {
-            _cancelled = cancelled;
+            _canceled = canceled;
             _waitHandle.Set();
             if (_callback != null) _callback(this);
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
             if (_waitHandle != null)
             {
                 _waitHandle.Close();
                 _waitHandle = null;
             }
+        }
+
+        ~RendererAsyncResult()
+        {
+            Dispose(false);
         }
     }
 }

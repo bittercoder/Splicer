@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
+using Splicer.Properties;
 using Splicer.Timeline;
-using Splicer.Utils;
-using Splicer.Utils.Audio;
+using Splicer.Utilities;
+using Splicer.Utilities.Audio;
 
 namespace Splicer.Renderer
 {
-    public class WavFileRenderer : AbstractRenderer
+    public class WavFileRenderer : AbstractRenderer, IDisposable
     {
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public WavFileRenderer(ITimeline timeline, string outputFile)
             : this(timeline, outputFile, null, null, null)
         {
         }
 
-        public WavFileRenderer(ITimeline timeline, string outputFile, AudioFormat format, IDESCombineCB audioCallback)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public WavFileRenderer(ITimeline timeline, string outputFile, AudioFormat format,
+                               ICallbackParticipant[] audioParticipants)
             : base(timeline)
         {
             AudioCompressor compressor = null;
@@ -37,9 +43,9 @@ namespace Splicer.Renderer
             {
                 compressor = AudioCompressorFactory.Create(format);
 
-                _dc.Add(compressor.Filter);
+                Cleanup.Add(compressor.Filter);
 
-                RenderToWavDest(outputFile, compressor.Filter, compressor.MediaType, audioCallback);
+                RenderToWavDest(outputFile, compressor.Filter, compressor.MediaType, audioParticipants);
 
                 ChangeState(RendererState.Initialized);
             }
@@ -52,70 +58,95 @@ namespace Splicer.Renderer
             }
         }
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public WavFileRenderer(ITimeline timeline, string outputFile, IBaseFilter audioCompressor, AMMediaType mediaType,
-                               IDESCombineCB audioCallback)
+                               ICallbackParticipant[] audioParticipants)
             : base(timeline)
         {
-            RenderToWavDest(outputFile, audioCompressor, mediaType, audioCallback);
+            RenderToWavDest(outputFile, audioCompressor, mediaType, audioParticipants);
 
             ChangeState(RendererState.Initialized);
         }
 
+        #region IDisposable Members
 
-        public void RenderToWavDest(
+        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        private void RenderToWavDest(
             string outputFile,
             IBaseFilter audioCompressor,
             AMMediaType mediaType,
-            IDESCombineCB audioCallback)
+            ICallbackParticipant[] audioParticipants)
         {
-            if (audioCompressor != null) _dc.Add(audioCompressor);
+            if (audioCompressor != null) Cleanup.Add(audioCompressor);
 
             int hr;
 
-            if (_firstAudioGroup == null)
+            if (FirstAudioGroup == null)
             {
-                throw new SplicerException("No audio stream to render");
+                throw new SplicerException(Resources.ErrorNoAudioStreamToRender);
             }
 
             if (outputFile == null)
             {
-                throw new SplicerException("Output file name cannot be null");
+                throw new SplicerException(Resources.ErrorInvalidOutputFileName);
             }
 
             // Contains useful routines for creating the graph
-            ICaptureGraphBuilder2 icgb = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
-            _dc.Add(icgb);
+            var graphBuilder = (ICaptureGraphBuilder2) new CaptureGraphBuilder2();
+            Cleanup.Add(graphBuilder);
 
             try
             {
-                hr = icgb.SetFiltergraph(_graph);
+                hr = graphBuilder.SetFiltergraph(Graph);
                 DESError.ThrowExceptionForHR(hr);
 
-                IBaseFilter wavDestFilter = StandardFilters.RenderWavDest(_dc, _graph);
-                IBaseFilter fileSink = StandardFilters.RenderFileDestination(_dc, _graph, outputFile);
+                IBaseFilter wavDestFilter = StandardFilters.RenderWavDestination(Cleanup, Graph);
+                IBaseFilter fileSink = StandardFilters.RenderFileDestination(Cleanup, Graph, outputFile);
 
                 try
                 {
-                    RenderGroups(icgb, audioCompressor, null, wavDestFilter, audioCallback, null);
+                    RenderGroups(graphBuilder, audioCompressor, null, wavDestFilter, audioParticipants, null);
 
-                    FilterGraphTools.ConnectFilters(_graph, wavDestFilter, fileSink, true);
+                    FilterGraphTools.ConnectFilters(Graph, wavDestFilter, fileSink, true);
 
                     // if supplied, apply the media type to the filter
                     if (mediaType != null)
                     {
                         FilterGraphTools.SetFilterFormat(mediaType, audioCompressor);
                     }
+
+                    DisableClock();
                 }
                 finally
                 {
-                    Marshal.ReleaseComObject(wavDestFilter);
-                    Marshal.ReleaseComObject(fileSink);
+                    if (wavDestFilter != null) Marshal.ReleaseComObject(wavDestFilter);
+                    if (fileSink != null) Marshal.ReleaseComObject(fileSink);
                 }
             }
             finally
             {
-                Marshal.ReleaseComObject(icgb);
+                Marshal.ReleaseComObject(graphBuilder);
             }
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        ~WavFileRenderer()
+        {
+            Dispose(false);
+        }
+
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        protected virtual void Dispose(bool disposing)
+        {
+            DisposeRenderer(disposing);
         }
     }
 }

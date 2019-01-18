@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,28 +14,38 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using DirectShowLib;
 using DirectShowLib.DES;
-using Splicer.Utils;
-using Splicer.Utils.Audio;
+using Splicer.Properties;
+using Splicer.Utilities;
+using Splicer.Utilities.Audio;
 using Splicer.WindowsMedia;
 
 namespace Splicer.Timeline
 {
     public static class StandardFilters
     {
-        public static readonly Guid WavDestFilterId = new Guid("3C78B8E2-6C4D-11D1-ADE2-0000F8754B99");
+        /// <summary>
+        /// This is the identified for the WavDest filter (a sample included with the Platform SDK for direct show)
+        /// </summary>
+        public static readonly Guid WavDestinationFilterId = new Guid("3C78B8E2-6C4D-11D1-ADE2-0000F8754B99");
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public static IBaseFilter RenderFileDestination(DisposalCleanup dc, IGraphBuilder graph, string outputFile)
         {
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graph == null) throw new ArgumentNullException("graph");
+            if (string.IsNullOrEmpty(outputFile)) throw new ArgumentNullException("outputFile");
+
             int hr = 0;
 
-            IBaseFilter fileFilter = (IBaseFilter) new FileWriter();
+            var fileFilter = (IBaseFilter) new FileWriter();
 
             hr = ((IFileSinkFilter) fileFilter).SetFileName(outputFile, null);
             DsError.ThrowExceptionForHR(hr);
 
-            hr = graph.AddFilter(fileFilter, "Output File");
+            hr = graph.AddFilter(fileFilter, Resources.DefaultFileDestinationName);
             DsError.ThrowExceptionForHR(hr);
 
             dc.Add(fileFilter);
@@ -43,22 +53,33 @@ namespace Splicer.Timeline
             return fileFilter;
         }
 
-        public static IBaseFilter RenderWavDest(DisposalCleanup dc, IGraphBuilder graph)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public static IBaseFilter RenderWavDestination(DisposalCleanup dc, IGraphBuilder graph)
         {
-            IBaseFilter wavDest = FilterGraphTools.AddFilterFromClsid(graph, WavDestFilterId, "Wav DEST");
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graph == null) throw new ArgumentNullException("graph");
+
+            IBaseFilter wavDest =
+                FilterGraphTools.AddFilterFromClsid(graph, WavDestinationFilterId, Resources.DefaultWavDestinationName);
             dc.Add(wavDest);
 
             return wavDest;
         }
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public static IBaseFilter RenderAsfWriterWithProfile(DisposalCleanup dc, IGraphBuilder graph, string profileData,
                                                              string outputFile)
         {
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graph == null) throw new ArgumentNullException("graph");
+            if (string.IsNullOrEmpty(profileData)) throw new ArgumentNullException("profileData");
+            if (string.IsNullOrEmpty(outputFile)) throw new ArgumentNullException("outputFile");
+
             int hr = 0;
 
-            IBaseFilter asfWriterFilter = (IBaseFilter) new WMAsfWriter();
+            var asfWriterFilter = (IBaseFilter) new WMAsfWriter();
             dc.Add(asfWriterFilter);
-            hr = graph.AddFilter(asfWriterFilter, "ASF Writer");
+            hr = graph.AddFilter(asfWriterFilter, Resources.DefaultAsfWriterName);
             DsError.ThrowExceptionForHR(hr);
 
             // Create an appropriate IWMProfile from the data
@@ -69,7 +90,7 @@ namespace Splicer.Timeline
             dc.Add(wmProfile);
 
             // Set the profile on the writer
-            IConfigAsfWriter2 configWriter = (IConfigAsfWriter2) asfWriterFilter;
+            var configWriter = (IConfigAsfWriter2) asfWriterFilter;
             configWriter.ConfigureFilterUsingProfile(wmProfile);
 
             hr = ((IFileSinkFilter) asfWriterFilter).SetFileName(outputFile, null);
@@ -78,56 +99,74 @@ namespace Splicer.Timeline
             return asfWriterFilter;
         }
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public static IBaseFilter CreateAudioCompressor(DisposalCleanup dc, IGraphBuilder graph, IPin outPin,
                                                         AudioFormat settings)
         {
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graph == null) throw new ArgumentNullException("graph");
+            if (outPin == null) throw new ArgumentNullException("outPin");
+            if (settings == null) throw new ArgumentNullException("settings");
+
             int hr = 0;
 
-            AudioCompressor compressor = AudioCompressorFactory.Create(settings);
-            IBaseFilter compressorFilter = compressor.Filter;
-            dc.Add(compressorFilter);
-
-            hr = graph.AddFilter(compressorFilter, settings.AudioCompressor);
-            DsError.ThrowExceptionForHR(hr);
-
-            FilterGraphTools.ConnectFilters(graph, outPin, compressorFilter, true);
-
-            // set the media type on the output pin of the compressor
-            if (compressor.MediaType != null)
+            using (AudioCompressor compressor = AudioCompressorFactory.Create(settings))
             {
-                FilterGraphTools.SetFilterFormat(compressor.MediaType, compressorFilter);
-            }
+                IBaseFilter compressorFilter = compressor.Filter;
+                dc.Add(compressorFilter);
 
-            return compressorFilter;
+                hr = graph.AddFilter(compressorFilter, settings.AudioCompressor);
+                DsError.ThrowExceptionForHR(hr);
+
+                FilterGraphTools.ConnectFilters(graph, outPin, compressorFilter, true);
+
+                // set the media type on the output pin of the compressor
+                if (compressor.MediaType != null)
+                {
+                    FilterGraphTools.SetFilterFormat(compressor.MediaType, compressorFilter);
+                }
+
+                return compressorFilter;
+            }
         }
 
-        public static IBaseFilter RenderAviDest(DisposalCleanup dc, ICaptureGraphBuilder2 icgb, string outputFile)
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+        public static IBaseFilter RenderAviDestination(DisposalCleanup dc, ICaptureGraphBuilder2 graphBuilder,
+                                                       string outputFile)
         {
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graphBuilder == null) throw new ArgumentNullException("graphBuilder");
+            if (string.IsNullOrEmpty(outputFile)) throw new ArgumentNullException("outputFile");
+
             int hr = 0;
 
             // Create the file writer
-            IBaseFilter pMux;
-            IFileSinkFilter pFilter = null;
+            IBaseFilter multiplexer;
+            IFileSinkFilter filter = null;
             try
             {
-                hr = icgb.SetOutputFileName(MediaSubType.Avi, outputFile, out pMux, out pFilter);
-                dc.Add(pMux);
+                hr = graphBuilder.SetOutputFileName(MediaSubType.Avi, outputFile, out multiplexer, out filter);
+                dc.Add(multiplexer);
                 DESError.ThrowExceptionForHR(hr);
             }
             finally
             {
-                if (pFilter != null) Marshal.ReleaseComObject(pFilter);
+                if (filter != null) Marshal.ReleaseComObject(filter);
             }
 
-            return pMux;
+            return multiplexer;
         }
 
+        [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         public static IBaseFilter RenderNull(DisposalCleanup dc, IGraphBuilder graph)
         {
-            IBaseFilter filter = (IBaseFilter) new NullRenderer();
+            if (dc == null) throw new ArgumentNullException("dc");
+            if (graph == null) throw new ArgumentNullException("graph");
+
+            var filter = (IBaseFilter) new NullRenderer();
             dc.Add(filter);
 
-            graph.AddFilter(filter, "Null Renderer");
+            graph.AddFilter(filter, Resources.DefaultNullRendererName);
 
             return filter;
         }

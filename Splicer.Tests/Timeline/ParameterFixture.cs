@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
-using NUnit.Framework;
+//using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Splicer.Timeline.Tests
 {
-    [TestFixture]
+    [TestClass]
     public class ParameterFixture
     {
-        [Test]
+        [TestMethod]
         public void Construct1()
         {
-            Parameter parameter = new Parameter("param1", (long) 5, 10, (long) 20);
+            var parameter = new Parameter("param1", 5, 10, 20);
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("5", parameter.Value);
@@ -32,10 +32,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual("20", parameter.Intervals[0].Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct2()
         {
-            Parameter parameter = new Parameter("param1", (double) 5.0, 10, (double) 20);
+            var parameter = new Parameter("param1", 5.0, 10, 20);
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("5", parameter.Value);
@@ -44,10 +44,10 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual("20", parameter.Intervals[0].Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct3()
         {
-            Parameter parameter = new Parameter("param1", "5", 10, "20");
+            var parameter = new Parameter("param1", "5", 10, "20");
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("5", parameter.Value);
@@ -56,58 +56,40 @@ namespace Splicer.Timeline.Tests
             Assert.AreEqual("20", parameter.Intervals[0].Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct4()
         {
-            Parameter parameter = new Parameter("param1", (long) 5);
+            var parameter = new Parameter("param1", 5);
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("5", parameter.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct5()
         {
-            Parameter parameter = new Parameter("param1", (double) 5.0);
+            var parameter = new Parameter("param1", 5.0);
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("5", parameter.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct6()
         {
-            Parameter parameter = new Parameter("param1", true);
+            var parameter = new Parameter("param1", true);
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("True", parameter.Value);
         }
 
-        [Test]
+        [TestMethod]
         public void Construct7()
         {
-            Parameter parameter = new Parameter("param1", "text");
+            var parameter = new Parameter("param1", "text");
             Assert.AreEqual("param1", parameter.Name);
             Assert.AreEqual(0, parameter.DispId);
             Assert.AreEqual("text", parameter.Value);
-        }
-
-        [Test]
-        public void SetValues()
-        {
-            Parameter parameter = new Parameter();
-            parameter.DispId = 10;
-            Assert.AreEqual(10, parameter.DispId);
-
-            List<Interval> intervals = new List<Interval>();
-            parameter.Intervals = intervals;
-            Assert.AreSame(intervals, parameter.Intervals);
-
-            parameter.Name = "name";
-            Assert.AreEqual("name", parameter.Name);
-
-            parameter.Value = "value";
-            Assert.AreEqual("value", parameter.Value);
         }
     }
 }

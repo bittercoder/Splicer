@@ -1,4 +1,4 @@
-// Copyright 2004-2006 Castle Project - http://www.castleproject.org/
+// Copyright 2006-2008 Splicer Project - http://www.codeplex.com/splicer/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@ using System;
 
 namespace Splicer.Renderer
 {
-    public interface IRenderer : IDisposable
+    public interface IRenderer
     {
+        /// <summary>
+        /// Gets the current state of the renderer
+        /// </summary>
+        RendererState State { get; }
+
         event EventHandler RenderCompleted;
 
         /// <summary>
@@ -34,8 +39,8 @@ namespace Splicer.Renderer
         /// Saves the renderers underlying filter graph to a file (which can be loaded
         /// into graphedit for examination)
         /// </summary>
-        /// <param name="filename"></param>
-        void SaveToGraphFile(string filename);
+        /// <param name="fileName"></param>
+        void SaveToGraphFile(string fileName);
 
         /// <summary>
         /// Begin rendering, and block until complete.
@@ -70,10 +75,5 @@ namespace Splicer.Renderer
         /// </summary>
         /// <param name="result"></param>
         void EndCancel(IAsyncResult result);
-
-        /// <summary>
-        /// Gets the current state of the renderer
-        /// </summary>
-        RendererState State { get; }
     }
 }
